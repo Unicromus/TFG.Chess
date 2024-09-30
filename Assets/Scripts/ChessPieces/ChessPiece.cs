@@ -67,7 +67,8 @@ public class ChessPiece : MonoBehaviour
         return r;
     }
     // "ref" reference allows the method to modify the original array. Without "ref" it would modify a copy of that array leaving the original unchanged.
-    public virtual SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList, ref List<Vector2Int> availableMoves)
+    public virtual SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList, ref List<Vector2Int> availableMoves,
+    bool castlingWhiteKingS, bool castlingWhiteQueenS, bool castlingBlackKingS, bool castlingBlackQueenS, string possibleEnPassantT)
     {
         return SpecialMove.None;
     }

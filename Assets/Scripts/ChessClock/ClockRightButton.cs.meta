@@ -1,11 +1,9 @@
 fileFormatVersion: 2
-guid: 6a17799f6639c394f9509510ccc2e3b4
+guid: 0e72a945c932d624c81906cffd900c24
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - tileMaterial: {fileID: 2100000, guid: 3111a21e9104dad4dbef6f5755b04a62, type: 2}
-  - victoryScreen: {instanceID: 0}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
