@@ -37,12 +37,15 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private float deathSize = 0.5f; // El tamaño de las piezas derrotadas.
     //[SerializeField] private float deathSpacing = 0.3f; // El espacio entre cada pieza derrotada.
     [SerializeField] private float dragOffset = 0.1f; // La distancia para elevar las piezas a la hora de moverlas.
+
+    [Header("Victory screen")]
     [SerializeField] private GameObject victoryScreen; // Canvas Panel.
 
-    [SerializeField] private ChessClock chessClock;
+    [Header("Chess clock")]
+    [SerializeField] private ChessClock chessClock; // Reloj Digital.
 
     [Header("Prefabs & Materials")]
-    [SerializeField] private GameObject[] prefabs; // Los prefabs de las piezas de ajedrez.
+    [SerializeField] private GameObject[] piecePrefabs; // Los prefabs de las piezas de ajedrez.
     [SerializeField] private Material[] teamMaterials; // Los materiales de los equipos del ajedrez, blanco y negro.
 
     // LOGIC
@@ -62,20 +65,23 @@ public class Chessboard : MonoBehaviour
     private List<Vector2Int[]> moveList = new List<Vector2Int[]>(); // La lista que contiene todos los movimientos del tablero. Lista[antiguaPosicion(x, y), nuevaPosicion(x, y)]
     private ChessPiece lastPieceMoved;
 
+    // Chess State LOGIC - Forsyth-Edwards Notation (FEN)
     private bool isWhiteTurn; // Turno de las piezas blancas?
     private bool castlingWhiteKingSide;
     private bool castlingWhiteQueenSide;
     private bool castlingBlackKingSide;
     private bool castlingBlackQueenSide;
     private string possibleEnPassantTarget; // the square behind the pawn (that is a possible En Passant target) in algebraic notation.
-    private int halfmoveClock; // how many moves both players have made since the last pawn advance or piece capture
+    private int halfmoveClock; // how many moves both players have made since the last pawn advance or piece capture.
     private int fullmoveNumber; // the number of completed turns in the game. This number is incremented by one every time Black moves.
 
+    // AI LOGIC
     private GameMode gameMode;
     private Team playerTeam;
 
-    private const int delayLimits = 10;
-    private float timeDelay = 2.0f;
+    private const int MIN_TIME_DELAY = 2; // el tiempo MÍNIMO que puede llegar a tardar la IA en hacer un movimiento.
+    private const int MAX_TIME_DELAY = 11; // el tiempo MÁXIMO que puede llegar a tardar la IA en hacer un movimiento.
+    private float timeDelay; // el tiempo que tarda la IA en hacer un movimiento.
 
     private void Awake()
     {
@@ -90,6 +96,8 @@ public class Chessboard : MonoBehaviour
 
         gameMode = GameMode.OnePlayer;
         playerTeam = Team.White;
+
+        timeDelay = 2.0f;
 
         GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y);
         SpawnAllPieces();
@@ -134,12 +142,12 @@ public class Chessboard : MonoBehaviour
                 {
                     // Is it our turn?
                     if ((gameMode == GameMode.OnePlayer &&
-                        ((chessPieces[hitPosition.x, hitPosition.y].team == 0 && isWhiteTurn) ||
-                        (chessPieces[hitPosition.x, hitPosition.y].team == 1 && !isWhiteTurn)))
+                        ((isWhiteTurn && chessPieces[hitPosition.x, hitPosition.y].team == 0 && chessClock.GetIsTimerWhite()) ||
+                        (!isWhiteTurn && chessPieces[hitPosition.x, hitPosition.y].team == 1 && chessClock.GetIsTimerBlack())))
                         ||
                         ((gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot) &&
-                        ((chessPieces[hitPosition.x, hitPosition.y].team == 0 && isWhiteTurn && playerTeam == Team.White) ||
-                        (chessPieces[hitPosition.x, hitPosition.y].team == 1 && !isWhiteTurn && playerTeam == Team.Black))))
+                        ((isWhiteTurn && chessPieces[hitPosition.x, hitPosition.y].team == 0 && chessClock.GetIsTimerWhite() && playerTeam == Team.White) ||
+                        (!isWhiteTurn && chessPieces[hitPosition.x, hitPosition.y].team == 1 && chessClock.GetIsTimerBlack() && playerTeam == Team.Black))))
                     {
                         currentlyDragging = chessPieces[hitPosition.x, hitPosition.y];
 
@@ -200,19 +208,17 @@ public class Chessboard : MonoBehaviour
 
         /* Random AI Bot Move */
         if ((gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot) &&
-            ((!isWhiteTurn && playerTeam == Team.White) || (isWhiteTurn && playerTeam == Team.Black)) &&
-            ((chessClock.isWhiteTurn && playerTeam == Team.Black) || (!chessClock.isWhiteTurn && playerTeam == Team.White))) // Turno de la IA
+            ((isWhiteTurn && playerTeam == Team.Black && chessClock.GetIsTimerWhite()) || 
+            (!isWhiteTurn && playerTeam == Team.White && chessClock.GetIsTimerBlack())))
         {
-            if (timeDelay > 0)
+            if (timeDelay > 0) // Tiempo de espera - CONTADOR
                 timeDelay -= Time.deltaTime;
 
             if (gameMode == GameMode.PlayerVSRandomBot)
             {
-                if (timeDelay <= 0) // Tiempo de espera
+                if (timeDelay <= 0) // Tiempo de espera - FINALIZADO
                 {
-                    System.Random rnd = new System.Random();
-                    int index = rnd.Next(delayLimits);
-                    timeDelay = index;
+                    timeDelay = UnityEngine.Random.Range(MIN_TIME_DELAY, MAX_TIME_DELAY); // Tiempo de espera - ACTUALIZADO
 
                     RandomMove(isWhiteTurn); // Movimiento de la IA
 
@@ -227,9 +233,7 @@ public class Chessboard : MonoBehaviour
             {
                 if (timeDelay <= 0) // Tiempo de espera
                 {
-                    System.Random rnd = new System.Random();
-                    int index = rnd.Next(delayLimits);
-                    timeDelay = index;
+                    timeDelay = UnityEngine.Random.Range(MIN_TIME_DELAY, MAX_TIME_DELAY); // Tiempo de espera - ACTUALIZADO
 
                     AggressiveRandomMove(isWhiteTurn); // Movimiento de la IA
 
@@ -314,7 +318,7 @@ public class Chessboard : MonoBehaviour
     }
     private ChessPiece SpawnSinglePiece(ChessPieceType type, int team)
     {
-        ChessPiece cp = Instantiate(prefabs[(int)type - 1], transform).GetComponent<ChessPiece>(); // we do -1 because ChessPieceType has None 0
+        ChessPiece cp = Instantiate(piecePrefabs[(int)type - 1], transform).GetComponent<ChessPiece>(); // we do -1 because ChessPieceType has None 0
 
         cp.type = type; // type: 0-6
         cp.team = team; // team: 0 white | 1 black

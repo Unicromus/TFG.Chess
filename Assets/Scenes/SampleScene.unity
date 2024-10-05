@@ -4415,6 +4415,34 @@ PrefabInstance:
       propertyPath: victoryScreen
       value: 
       objectReference: {fileID: 759125242}
+    - target: {fileID: -4218949636005237643, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
+      propertyPath: piecePrefabs.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -4218949636005237643, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
+      propertyPath: piecePrefabs.Array.data[0]
+      value: 
+      objectReference: {fileID: 7489424017062205443, guid: ebdedd3bd7654ce4d8fbd45e7fd504c9, type: 3}
+    - target: {fileID: -4218949636005237643, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
+      propertyPath: piecePrefabs.Array.data[1]
+      value: 
+      objectReference: {fileID: 3445410288987921021, guid: 9f2aa77adb0917e40859c5aea003a1fb, type: 3}
+    - target: {fileID: -4218949636005237643, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
+      propertyPath: piecePrefabs.Array.data[2]
+      value: 
+      objectReference: {fileID: 5668936845212471155, guid: 50144131b60291541a7f1c84460e130c, type: 3}
+    - target: {fileID: -4218949636005237643, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
+      propertyPath: piecePrefabs.Array.data[3]
+      value: 
+      objectReference: {fileID: 6498743015591119939, guid: ffba35ff54faca34a935d9a788f75777, type: 3}
+    - target: {fileID: -4218949636005237643, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
+      propertyPath: piecePrefabs.Array.data[4]
+      value: 
+      objectReference: {fileID: 3640403050732074490, guid: 3596a63f0946145479ea8797ae74d3ea, type: 3}
+    - target: {fileID: -4218949636005237643, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
+      propertyPath: piecePrefabs.Array.data[5]
+      value: 
+      objectReference: {fileID: 7716332408513460681, guid: 26fecff9664967147a1b642d5b132bd9, type: 3}
     - target: {fileID: 8231369876817089229, guid: 9f9ea44d8f8b25747abf6658d7ed10b1, type: 3}
       propertyPath: m_Name
       value: A.Tablero.2.0
@@ -10333,11 +10361,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   victoryScreen: {fileID: 759125242}
   clockTopButtons: {fileID: 7756071884265625333}
+  chessBoard: {fileID: 0}
   textTimerWhite: {fileID: 714725299}
   textTimerBlack: {fileID: 1184774504}
-  timerWhite: 0
-  timerBlack: 0
-  isWhiteTurn: 0
 --- !u!1 &1990624841
 GameObject:
   m_ObjectHideFlags: 0
@@ -11054,6 +11080,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3652104201420987245, guid: 101ec6bf4dd69f14ebe490394e019a46, type: 3}
+      propertyPath: chessBoard
+      value: 
+      objectReference: {fileID: 420484680}
     - target: {fileID: 3652104201420987245, guid: 101ec6bf4dd69f14ebe490394e019a46, type: 3}
       propertyPath: victoryScreen
       value: 
