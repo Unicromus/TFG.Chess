@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a290ae5448ef19d4aaed79032781d78e
+guid: c3cd0c066a70b994b93e6de1cf1a0432
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -8,22 +8,47 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.Plastic.Black
-    second: {fileID: 2100000, guid: 0513e11331393484d8839734b7f61011, type: 2}
+    second: {fileID: 2100000, guid: 7df74667f1e146641a3ea91c749eab9a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.Plastic.Blue
-    second: {fileID: 2100000, guid: 98fd882aec20c5a468888b002bdc3e84, type: 2}
+    second: {fileID: 2100000, guid: bf1b4eda352c2634e933a704501761da, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.Plastic.Button.Minus
+    second: {fileID: 2100000, guid: c89c5d503bc39434da05a385648dfb38, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.Plastic.Button.Play
+    second: {fileID: 2100000, guid: 95e5dfee6b67ff945ac0b342ac4cbbbf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.Plastic.Button.Plus
+    second: {fileID: 2100000, guid: b17f7712129402644b9b29106165e743, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.Plastic.Button.Reset
+    second: {fileID: 2100000, guid: 71f0c2a39a5df84428f5767aa17e7a61, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.Plastic.Button.Stop
+    second: {fileID: 2100000, guid: d4d35250a1e808943a46562b134de553, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.Plastic.Gray
-    second: {fileID: 2100000, guid: 92908e47569e1804fa3a985b208bf0dd, type: 2}
+    second: {fileID: 2100000, guid: d7e939ffb654e5b4f99674fdaa624ed9, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.Plastic.Orange
-    second: {fileID: 2100000, guid: 8cf2eaac0385f3a419613e7b901d54e4, type: 2}
+    second: {fileID: 2100000, guid: 7f758e1ab0757e04ea37acd7813695e9, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

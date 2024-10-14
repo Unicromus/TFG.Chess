@@ -14,6 +14,15 @@ public enum SpecialMove
     Promotion
 }
 
+public enum PromotionPieceType
+{
+    None = 0,
+    Rook = 1, // Torre
+    Knight = 2, // Caballo
+    Bishop = 3, // Alfil
+    Queen = 4, // Reina
+}
+
 public enum GameMode
 {
     OnePlayer = 0,
@@ -39,7 +48,10 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private float dragOffset = 0.1f; // La distancia para elevar las piezas a la hora de moverlas.
 
     [Header("Victory screen")]
-    [SerializeField] private GameObject victoryScreen; // Canvas Panel.
+    [SerializeField] private GameObject victoryScreen; // Canvas Victory Panel.
+
+    [Header("Promotion menu")]
+    [SerializeField] private GameObject promotionMenu; // Canvas Promotion Menu.
 
     [Header("Chess clock")]
     [SerializeField] private ChessClock chessClock; // Reloj Digital.
@@ -371,6 +383,14 @@ public class Chessboard : MonoBehaviour
         victoryScreen.SetActive(true);
         victoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
     }
+    private void DisplayPromotionMenu()
+    {
+        promotionMenu.SetActive(true);
+    }
+    private void HidePromotionMenu()
+    {
+        promotionMenu.SetActive(false);
+    }
 
     // Buttons
     public void OnStartButton()
@@ -414,6 +434,40 @@ public class Chessboard : MonoBehaviour
         SetChessState(chessS);
         String chessState = GetChessState();
         Debug.Log(chessState);
+    }
+    public void OnSetPromotionPiece(PromotionPieceType pPieceType)
+    {
+        Vector2Int[] lastMove = moveList[moveList.Count - 1];
+        ChessPiece targetPawn = chessPieces[lastMove[1].x, lastMove[1].y];
+
+        ChessPiece promotionPiece = null;
+
+        switch (pPieceType)
+        {
+            default:
+                break;
+            case PromotionPieceType.Rook:
+                promotionPiece = SpawnSinglePiece(ChessPieceType.Rook, targetPawn.team); // Create white|black Rook
+                break;
+            case PromotionPieceType.Knight:
+                promotionPiece = SpawnSinglePiece(ChessPieceType.Knight, targetPawn.team); // Create white|black Knight
+                break;
+            case PromotionPieceType.Bishop:
+                promotionPiece = SpawnSinglePiece(ChessPieceType.Bishop, targetPawn.team); // Create white|black Bishop
+                break;
+            case PromotionPieceType.Queen:
+                promotionPiece = SpawnSinglePiece(ChessPieceType.Queen, targetPawn.team); // Create white|black Queen
+                break;
+        }
+        if (promotionPiece != null)
+        {
+            promotionPiece.transform.position = chessPieces[lastMove[1].x, lastMove[1].y].transform.position; // Set position smoother
+            Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject); // Destroy Pawn
+            chessPieces[lastMove[1].x, lastMove[1].y] = promotionPiece; // Set promotionPiece
+            PositionSinglePiece(lastMove[1].x, lastMove[1].y); // Update position
+
+            HidePromotionMenu();
+        }
     }
 
     // Getters & Setters
@@ -504,21 +558,30 @@ public class Chessboard : MonoBehaviour
 
             if (targetPawn.type == ChessPieceType.Pawn) // It's a Pawn
             {
-                if (targetPawn.team == 0 && lastMove[1].y == 7) // White team and last position 7
+                if (targetPawn.team == 0 && lastMove[1].y == 7 || targetPawn.team == 1 && lastMove[1].y == 0)
                 {
-                    ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, 0); // Create white newQueen
-                    newQueen.transform.position = chessPieces[lastMove[1].x, lastMove[1].y].transform.position; // Set position smoother
-                    Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject); // Destroy Pawn
-                    chessPieces[lastMove[1].x, lastMove[1].y] = newQueen; // Set newQueen
-                    PositionSinglePiece(lastMove[1].x, lastMove[1].y); // Update position
-                }
-                if (targetPawn.team == 1 && lastMove[1].y == 0) // Black team and last  position 0
-                {
-                    ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, 1); // Create black newQueen
-                    newQueen.transform.position = chessPieces[lastMove[1].x, lastMove[1].y].transform.position; // Set position smoother
-                    Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject); // Destroy Pawn
-                    chessPieces[lastMove[1].x, lastMove[1].y] = newQueen; // Set newQueen
-                    PositionSinglePiece(lastMove[1].x, lastMove[1].y); // Update position
+                    // AI Random Promotion Choose
+                    if ((gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot) &&
+                        ((isWhiteTurn && playerTeam == Team.Black && chessClock.GetIsTimerWhite()) ||
+                        (!isWhiteTurn && playerTeam == Team.White && chessClock.GetIsTimerBlack())))
+                    {
+                        System.Random rnd = new System.Random(); // Random object
+                        int promotionPieceProbability = rnd.Next(0, 100); // Get random index
+
+                        if (promotionPieceProbability <= 94) // 0 .. 94 ~~ 94%
+                            OnSetPromotionPiece(PromotionPieceType.Queen);
+                        else if (promotionPieceProbability <= 94 + 3) // 95 .. 97 ~~ 3%
+                            OnSetPromotionPiece(PromotionPieceType.Knight);
+                        else if (promotionPieceProbability <= 94 + 3 + 2) // 98 .. 99 ~~ 2%
+                            OnSetPromotionPiece(PromotionPieceType.Rook);
+                        else if (promotionPieceProbability <= 94 + 3 + 2 + 1) // 99 .. 100 ~~ 1%
+                            OnSetPromotionPiece(PromotionPieceType.Bishop);
+                    }
+                    // Menu de eleccion
+                    else
+                    {
+                        DisplayPromotionMenu();
+                    }
                 }
             }
         }

@@ -13,7 +13,8 @@ public class GameUI : MonoBehaviour
     [SerializeField] private GameObject screenInGameUI;
     [SerializeField] private GameObject screenCanvasClock;
 
-    [SerializeField] private Chessboard chessBoard;
+    [SerializeField] private Chessboard chessBoard; // Tablero de Ajedrez
+    [SerializeField] private ChessClock chessClock; // Reloj Digital.
 
     public TMP_InputField textForsythEdwardsNotation;
 
@@ -72,7 +73,6 @@ public class GameUI : MonoBehaviour
     }
 
     /* Buttons InGameUI */
-
     public void OnOptionsButton()
     {
         if (screenInGameUI.transform.GetChild(0).gameObject.activeInHierarchy)
@@ -110,11 +110,6 @@ public class GameUI : MonoBehaviour
         chessBoard.OnSetForsythEdwardsNotation(chessS);
     }
 
-    public void OnMenuButton()
-    {
-        menuAnimator.SetTrigger("GameUI");
-    }
-
     public void OnCanvasClock()
     {
         if (screenCanvasClock.activeInHierarchy)
@@ -123,13 +118,36 @@ public class GameUI : MonoBehaviour
             screenCanvasClock.SetActive(true);
     }
 
+    public void OnMenuButton()
+    {
+        menuAnimator.SetTrigger("GameUI");
+    }
     public void OnResetButton()
     {
         chessBoard.OnResetButton();
+        chessClock.ResetTimer();
     }
     public void OnExitButton()
     {
         chessBoard.OnExitButton();
+    }
+
+    /* Buttons InGameUI - Promotion Buttons */
+    public void OnRookPromotion()
+    {
+        chessBoard.OnSetPromotionPiece(PromotionPieceType.Rook);
+    }
+    public void OnKnightPromotion()
+    {
+        chessBoard.OnSetPromotionPiece(PromotionPieceType.Knight);
+    }
+    public void OnBishopPromotion()
+    {
+        chessBoard.OnSetPromotionPiece(PromotionPieceType.Bishop);
+    }
+    public void OnQueenPromotion()
+    {
+        chessBoard.OnSetPromotionPiece(PromotionPieceType.Queen);
     }
 
     /* Buttons OnlineMenu */

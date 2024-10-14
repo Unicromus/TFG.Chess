@@ -9,7 +9,7 @@ public class ClockResetButton : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
-        chessClock.ResetTimer();
+        chessClock.ResetTimerAndBoard();
     }
 
 }

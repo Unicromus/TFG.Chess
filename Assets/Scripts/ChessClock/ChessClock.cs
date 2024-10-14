@@ -118,6 +118,27 @@ public class ChessClock : MonoBehaviour
         }
     }
 
+    public void PlusTimer()
+    {
+        if (!isTimerWhite & !isTimerBlack)
+        {
+            timerWhite += SECONDS_IN_MINUTE;
+            timerBlack += SECONDS_IN_MINUTE;
+            DisplayWhiteTime();
+            DisplayBlackTime();
+        }
+    }
+    public void MinusTimer()
+    {
+        if (!isTimerWhite & !isTimerBlack)
+        {
+            timerWhite -= SECONDS_IN_MINUTE;
+            timerBlack -= SECONDS_IN_MINUTE;
+            DisplayWhiteTime();
+            DisplayBlackTime();
+        }
+    }
+
     public void StartTimer()
     {
         if (isWhiteTurn)
@@ -135,12 +156,16 @@ public class ChessClock : MonoBehaviour
         StopTimer();
         timerWhite = TEN_MINUTES;
         timerBlack = TEN_MINUTES;
+        if (!isWhiteTurn)
+            clockTopButtons.transform.Rotate(new Vector3(0, 0, +5.5f));
         isWhiteTurn = true;
         DisplayWhiteTime();
         DisplayBlackTime();
-
-        if (!isWhiteTurn)
-            clockTopButtons.transform.Rotate(new Vector3(0, 0, +5.5f));
+    }
+    public void ResetTimerAndBoard()
+    {
+        ResetTimer();
+        chessBoard.OnResetButton();
     }
 
     /* Getters & Setters */
