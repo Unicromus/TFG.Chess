@@ -1,23 +1,35 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class ChessClock : MonoBehaviour
 {
-
+    [Header("Victory Screen")]
     [SerializeField] private GameObject victoryScreen;
 
+    [Header("Clock Top Buttons")]
     [SerializeField] private GameObject clockTopButtons;
 
+    [Header("Chess Board")]
     [SerializeField] private Chessboard chessBoard; // Tablero de ajedrez.
+
+    [Header("Sounds")]
+    [SerializeField] private AudioClip plusRightSoundClip;
+    [SerializeField] private AudioClip minusLeftSoundClip;
+    [SerializeField] private AudioClip startSoundClip;
+    [SerializeField] private AudioClip stopResetSoundClip;
+    [SerializeField] private AudioClip incorrectSoundClip;
+    [SerializeField] private AudioClip thirtySecondsSoundClip;
+    [SerializeField] private AudioClip gameWinSoundClip;
+    [SerializeField] private AudioClip gameLoseSoundClip;
 
     public TMP_Text textTimerWhite; // The text we gonna change for the white timer
     public TMP_Text textTimerBlack; // The text we gonna change for the black timer
 
     private const float GAME_OVER_TIME = 0.0f;
+    private const float LAST_THIRTY_SECONDS = 30.0f;
     private const float SECONDS_IN_MINUTE = 60.0f;
     private const float TEN_MINUTES = 10 * SECONDS_IN_MINUTE;
+    private const float SIXTY_MINUTES = 60 * SECONDS_IN_MINUTE;
 
     private float timerWhite; // The white timer
     private float timerBlack; // The black timer
@@ -26,6 +38,10 @@ public class ChessClock : MonoBehaviour
     private bool isTimerBlack; // The black timer is running
 
     private bool isWhiteTurn; // Which turn? TRUE --> WHITE | FALSE --> BLACK
+
+    [SerializeField] private float ADD_TIME = 3.0f;
+    private bool whiteLastThirtySeconds;
+    private bool blackLastThirtySeconds;
 
     // Start is called before the first frame update
     void Awake()
@@ -38,6 +54,8 @@ public class ChessClock : MonoBehaviour
         isWhiteTurn = true;
         DisplayWhiteTime();
         DisplayBlackTime();
+        whiteLastThirtySeconds = false;
+        blackLastThirtySeconds = false;
     }
 
     // Update is called once per frame
@@ -45,32 +63,62 @@ public class ChessClock : MonoBehaviour
     {
         if (isTimerWhite)
         {
+            if (timerWhite <= LAST_THIRTY_SECONDS & !whiteLastThirtySeconds)
+            {
+                whiteLastThirtySeconds = true;
+
+                // play sound FX
+                SoundFXManager.Instance.PlaySoundFXClip(thirtySecondsSoundClip, transform, 1f);
+            }
+
             if (timerWhite > GAME_OVER_TIME)
             {
                 timerWhite -= Time.deltaTime;
                 DisplayWhiteTime();
             }
-            else // White runs out of time. Black wins.
+            else // White runs out of time. BLACK WINS.
             {
-                StopTimer();
+                isTimerWhite = false;
+                isTimerBlack = false;
                 timerWhite = GAME_OVER_TIME;
                 DisplayWhiteTime();
                 DisplayVictory((int)Team.Black);
+
+                // play sound FX
+                if (chessBoard.GetPlayerTeam() == Team.Black)
+                    SoundFXManager.Instance.PlaySoundFXClip(gameWinSoundClip, transform, 1f);
+                else if (chessBoard.GetPlayerTeam() == Team.White)
+                    SoundFXManager.Instance.PlaySoundFXClip(gameLoseSoundClip, transform, 1f);
             }
         }
         else if (isTimerBlack)
         {
+            if (timerBlack <= LAST_THIRTY_SECONDS & !blackLastThirtySeconds)
+            {
+                blackLastThirtySeconds = true;
+
+                // play sound FX
+                SoundFXManager.Instance.PlaySoundFXClip(thirtySecondsSoundClip, transform, 1f);
+            }
+
             if (timerBlack > GAME_OVER_TIME)
             {
                 timerBlack -= Time.deltaTime;
                 DisplayBlackTime();
             }
-            else // Black runs out of time. White wins.
+            else // Black runs out of time. WHITE WINS.
             {
-                StopTimer();
+                isTimerWhite = false;
+                isTimerBlack = false;
                 timerBlack = GAME_OVER_TIME;
                 DisplayBlackTime();
                 DisplayVictory(((int)Team.White));
+
+                // play sound FX
+                if (chessBoard.GetPlayerTeam() == Team.White)
+                    SoundFXManager.Instance.PlaySoundFXClip(gameWinSoundClip, transform, 1f);
+                else if (chessBoard.GetPlayerTeam() == Team.Black)
+                    SoundFXManager.Instance.PlaySoundFXClip(gameLoseSoundClip, transform, 1f);
             }
         }
     }
@@ -97,63 +145,131 @@ public class ChessClock : MonoBehaviour
     /* Buttons */
     public void WhiteSwap()
     {
-        if (isTimerWhite && !isTimerBlack && isWhiteTurn && !chessBoard.GetIsWhiteTurn())
+        if (isTimerWhite && !isTimerBlack && isWhiteTurn && !chessBoard.GetIsWhiteTurn() && !chessBoard.GetIsPromoting())
         {
             isTimerWhite = !isTimerWhite;   // = false
             isTimerBlack = !isTimerBlack;   // = true
             isWhiteTurn = !isWhiteTurn;     // = false
 
             clockTopButtons.transform.Rotate(new Vector3(0, 0, -5.5f));
+
+            if (whiteLastThirtySeconds)
+            {
+                timerWhite += ADD_TIME;
+                DisplayWhiteTime();
+                DisplayBlackTime();
+            }
+
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(plusRightSoundClip, transform, 1f);
+        }
+        else
+        {
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(incorrectSoundClip, transform, 1f);
         }
     }
     public void BlackSwap()
     {
-        if (!isTimerWhite && isTimerBlack && !isWhiteTurn && chessBoard.GetIsWhiteTurn())
+        if (!isTimerWhite && isTimerBlack && !isWhiteTurn && chessBoard.GetIsWhiteTurn() && !chessBoard.GetIsPromoting())
         {
             isTimerWhite = !isTimerWhite;   // true
             isTimerBlack = !isTimerBlack;   // false
             isWhiteTurn = !isWhiteTurn;     // true
 
             clockTopButtons.transform.Rotate(new Vector3(0, 0, +5.5f));
+
+            if (blackLastThirtySeconds)
+            {
+                timerBlack += ADD_TIME;
+                DisplayWhiteTime();
+                DisplayBlackTime();
+            }
+
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(minusLeftSoundClip, transform, 1f);
+        }
+        else
+        {
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(incorrectSoundClip, transform, 1f);
         }
     }
 
     public void PlusTimer()
     {
-        if (!isTimerWhite & !isTimerBlack)
+        if ((!isTimerWhite & !isTimerBlack) & (timerWhite < SIXTY_MINUTES & timerBlack < SIXTY_MINUTES))
         {
             timerWhite += SECONDS_IN_MINUTE;
             timerBlack += SECONDS_IN_MINUTE;
             DisplayWhiteTime();
             DisplayBlackTime();
+
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(plusRightSoundClip, transform, 1f);
+        }
+        else
+        {
+            SoundFXManager.Instance.PlaySoundFXClip(incorrectSoundClip, transform, 1f);
         }
     }
     public void MinusTimer()
     {
-        if (!isTimerWhite & !isTimerBlack)
+        if ((!isTimerWhite & !isTimerBlack) & (timerWhite > SECONDS_IN_MINUTE & timerBlack > SECONDS_IN_MINUTE))
         {
             timerWhite -= SECONDS_IN_MINUTE;
             timerBlack -= SECONDS_IN_MINUTE;
             DisplayWhiteTime();
             DisplayBlackTime();
+
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(minusLeftSoundClip, transform, 1f);
+        }
+        else
+        {
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(incorrectSoundClip, transform, 1f);
         }
     }
 
     public void StartTimer()
     {
-        if (isWhiteTurn)
-            isTimerWhite = true;
-        else if (!isWhiteTurn)
-            isTimerBlack = true;
+        if (!isTimerWhite & !isTimerBlack)
+        {
+            if (isWhiteTurn)
+                isTimerWhite = true;
+            else if (!isWhiteTurn)
+                isTimerBlack = true;
+
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(startSoundClip, transform, 1f);
+        }
+        else
+        {
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(incorrectSoundClip, transform, 1f);
+        }
     }
     public void StopTimer()
     {
-        isTimerWhite = false;
-        isTimerBlack = false;
+        if (isTimerWhite | isTimerBlack)
+        {
+            isTimerWhite = false;
+            isTimerBlack = false;
+
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(stopResetSoundClip, transform, 1f);
+        }
+        else
+        {
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(incorrectSoundClip, transform, 1f);
+        }
     }
     public void ResetTimer()
     {
-        StopTimer();
+        isTimerWhite = false;
+        isTimerBlack = false;
         timerWhite = TEN_MINUTES;
         timerBlack = TEN_MINUTES;
         if (!isWhiteTurn)
@@ -161,6 +277,11 @@ public class ChessClock : MonoBehaviour
         isWhiteTurn = true;
         DisplayWhiteTime();
         DisplayBlackTime();
+        whiteLastThirtySeconds = false;
+        blackLastThirtySeconds = false;
+
+        // play sound FX
+        SoundFXManager.Instance.PlaySoundFXClip(stopResetSoundClip, transform, 1f);
     }
     public void ResetTimerAndBoard()
     {

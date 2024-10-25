@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public enum SpecialMove
 {
@@ -41,9 +38,10 @@ public class Chessboard : MonoBehaviour
     [Header("Art stuff")]
     [SerializeField] private Material tileMaterial; // El material de las baldosas invisibles.
     [SerializeField] private float tileSize = 0.05f; // El tamaño de cada baldosa invisible.
-    [SerializeField] private float yOffset = 0.0025f; // La distancia entre el tablero y las baldosas invisibles.
-    [SerializeField] private Vector3 boardCenter = new Vector3(0f, 0.0175f, 0f); // El centro del tablero.
+    [SerializeField] private float yOffset = 0.0025f; // La distancia entre el centro del tablero y las baldosas invisibles.
+    [SerializeField] private Vector3 boardCenter = new Vector3(0f, 0.0175f, 0f); // El centro del tablero (las baldosas visibles). Esta variable se debe actualizar al cambiar de geometria del tablero.
     [SerializeField] private float deathSize = 0.5f; // El tamaño de las piezas derrotadas.
+    [SerializeField] private float deathOffset = 0.005f; // El tamaño de las piezas derrotadas.
     //[SerializeField] private float deathSpacing = 0.3f; // El espacio entre cada pieza derrotada.
     [SerializeField] private float dragOffset = 0.1f; // La distancia para elevar las piezas a la hora de moverlas.
 
@@ -60,6 +58,20 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private GameObject[] piecePrefabs; // Los prefabs de las piezas de ajedrez.
     [SerializeField] private Material[] teamMaterials; // Los materiales de los equipos del ajedrez, blanco y negro.
 
+    [Header("Sounds")]
+    [SerializeField] private AudioClip shoutoutSoundClip;
+    [SerializeField] private AudioClip resetSoundClip;
+    [SerializeField] private AudioClip captureSoundClip;
+    [SerializeField] private AudioClip castleSoundClip;
+    [SerializeField] private AudioClip promoteSoundClip;
+    [SerializeField] private AudioClip moveSelfSoundClip;
+    [SerializeField] private AudioClip moveOpponentSoundClip;
+    [SerializeField] private AudioClip moveCheckSoundClip;
+    [SerializeField] private AudioClip gameDrawSoundClip;
+    [SerializeField] private AudioClip gameEndSoundClip;
+    [SerializeField] private AudioClip gameWinSoundClip;
+    [SerializeField] private AudioClip gameLoseSoundClip;
+
     // LOGIC
     private ChessPiece[,] chessPieces; // La logica del tablero, contiene las piezas del ajedrez. 32 piezas en un tablero de 8x8, si esta vacio no hay pieza en esa baldosa.
     private ChessPiece currentlyDragging; // La ficha que se esta arrastrando.
@@ -74,6 +86,7 @@ public class Chessboard : MonoBehaviour
     private Vector3 bounds; // Los limites del tablero. En este caso se utiliza para saber el punto inicial desde donde generar las baldosas invisibles.
 
     private SpecialMove specialMove; // Puede ser 0, EnPassant, Castling o Promotion.
+    private bool isPromoting; // If any piece is being promoted.
     private List<Vector2Int[]> moveList = new List<Vector2Int[]>(); // La lista que contiene todos los movimientos del tablero. Lista[antiguaPosicion(x, y), nuevaPosicion(x, y)]
     private ChessPiece lastPieceMoved;
 
@@ -97,6 +110,8 @@ public class Chessboard : MonoBehaviour
 
     private void Awake()
     {
+        isPromoting = false;
+
         isWhiteTurn = true;
         castlingWhiteKingSide = true;
         castlingWhiteQueenSide = true;
@@ -111,6 +126,7 @@ public class Chessboard : MonoBehaviour
 
         timeDelay = 2.0f;
 
+        boardCenter += transform.position;
         GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y);
         SpawnAllPieces();
         PositionAllpieces();
@@ -211,7 +227,7 @@ public class Chessboard : MonoBehaviour
         // If we're dragging a piece
         if (currentlyDragging)
         {
-            Plane horizontalPlane = new Plane(Vector3.up, Vector3.up * yOffset); // invisible Plane for Raycast
+            Plane horizontalPlane = new Plane(Vector3.up, Vector3.up * (yOffset + boardCenter.y)); // invisible Plane for Raycast
             float distance = 0.0f;
             // if ray in camera view hits horizontalPlane (should happen always). distance will be the distance between horizontalPlane and raycast.
             if (horizontalPlane.Raycast(ray, out distance))
@@ -262,7 +278,6 @@ public class Chessboard : MonoBehaviour
     // Generate the board. Se generan las baldosas.
     private void GenerateAllTiles(float tileSize, int tileCountX, int tileCountY)
     {
-        yOffset += transform.position.y;
         bounds = new Vector3(-(tileCountX / 2) * tileSize, 0, -(tileCountX / 2) * tileSize) + boardCenter;
 
         tiles = new GameObject[tileCountX, tileCountY];
@@ -376,7 +391,13 @@ public class Chessboard : MonoBehaviour
     // Checkmate
     private void CheckMate(int team)
     {
-        DisplayVictory(team);
+        // play sound FX
+        if ((playerTeam == Team.White && team == 0) || (playerTeam == Team.Black && team == 1))
+            SoundFXManager.Instance.PlaySoundFXClip(gameWinSoundClip, transform, 1f);
+        else if ((playerTeam == Team.White && team == 1) || (playerTeam == Team.Black && team == 0))
+            SoundFXManager.Instance.PlaySoundFXClip(gameLoseSoundClip, transform, 1f);
+
+        DisplayVictory(team); // 0 or 1
     }
     private void DisplayVictory(int winningTeam)
     {
@@ -390,6 +411,9 @@ public class Chessboard : MonoBehaviour
     private void HidePromotionMenu()
     {
         promotionMenu.SetActive(false);
+
+        // play sound FX
+        SoundFXManager.Instance.PlaySoundFXClip(promoteSoundClip, transform, 1f);
     }
 
     // Buttons
@@ -418,6 +442,9 @@ public class Chessboard : MonoBehaviour
         // ReStart the game
         SpawnAllPieces();
         PositionAllpieces();
+
+        // play sound FX
+        SoundFXManager.Instance.PlaySoundFXClip(resetSoundClip, transform, 1f);
     }
     public void OnExitButton()
     {
@@ -425,12 +452,18 @@ public class Chessboard : MonoBehaviour
     }
     public String OnGetForsythEdwardsNotation()
     {
+        // play sound FX
+        SoundFXManager.Instance.PlaySoundFXClip(shoutoutSoundClip, transform, 1f);
+
         String chessState = GetChessState();
         Debug.Log(chessState);
         return chessState;
     }
     public void OnSetForsythEdwardsNotation(String chessS)
     {
+        // play sound FX
+        SoundFXManager.Instance.PlaySoundFXClip(resetSoundClip, transform, 1f);
+
         SetChessState(chessS);
         String chessState = GetChessState();
         Debug.Log(chessState);
@@ -466,6 +499,7 @@ public class Chessboard : MonoBehaviour
             chessPieces[lastMove[1].x, lastMove[1].y] = promotionPiece; // Set promotionPiece
             PositionSinglePiece(lastMove[1].x, lastMove[1].y); // Update position
 
+            isPromoting = false;
             HidePromotionMenu();
         }
     }
@@ -480,9 +514,17 @@ public class Chessboard : MonoBehaviour
         playerTeam = t;
     }
 
+    public Team GetPlayerTeam()
+    {
+        return playerTeam;
+    }
     public bool GetIsWhiteTurn()
     {
         return isWhiteTurn;
+    }
+    public bool GetIsPromoting()
+    {
+        return isPromoting;
     }
 
     // Special Moves
@@ -505,7 +547,7 @@ public class Chessboard : MonoBehaviour
                         deadWhites.Add(enemyPawn);
                         enemyPawn.SetScale(Vector3.one * deathSize);
                         enemyPawn.SetPosition(
-                            new Vector3(8 * tileSize, 2 * yOffset, 0) // Fuera de la tabla 0-7 --> -1 y 8. x2 yOffset por la geometria de la tabla.
+                            new Vector3(8 * tileSize, deathOffset, 0) // Fuera de la tabla 0-7 --> -1 y 8. x2 yOffset por la geometria de la tabla.
                             + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
                             + new Vector3((tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
                             + (Vector3.forward * (tileSize / 2)) * (deadWhites.Count - 1)); // Distancia entre las piezas derrotadas.
@@ -515,13 +557,24 @@ public class Chessboard : MonoBehaviour
                         deadBlacks.Add(enemyPawn);
                         enemyPawn.SetScale(Vector3.one * deathSize);
                         enemyPawn.SetPosition(
-                            new Vector3(0, 2 * yOffset, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8. x2 yOffset por la geometria de la tabla.
+                            new Vector3(0, deathOffset, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8. x2 yOffset por la geometria de la tabla.
                             + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
                             + new Vector3(-(tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
                             + (Vector3.back * (tileSize / 2)) * (deadBlacks.Count - 1)); // Distancia entre las piezas derrotadas.
                     }
                     chessPieces[enemyPawn.currentX, enemyPawn.currentY] = null;
+
+                    // play sound FX
+                    SoundFXManager.Instance.PlaySoundFXClip(captureSoundClip, transform, 1f);
                 }
+            }
+            // play sound FX
+            else
+            {
+                if (playerTeam == Team.White)
+                    SoundFXManager.Instance.PlaySoundFXClip(moveSelfSoundClip, transform, 1f);
+                else if (playerTeam == Team.Black)
+                    SoundFXManager.Instance.PlaySoundFXClip(moveOpponentSoundClip, transform, 1f);
             }
         }
 
@@ -548,6 +601,17 @@ public class Chessboard : MonoBehaviour
                 PositionSinglePiece(3, ourY);
                 chessPieces[0, ourY] = null;
             }
+
+            // play sound FX
+            if ((lastMove[1].x == 6 && lastMove[1].y == ourY) || (lastMove[1].x == 2 && lastMove[1].y == ourY))
+                SoundFXManager.Instance.PlaySoundFXClip(castleSoundClip, transform, 1f);
+            else
+            {
+                if (playerTeam == Team.White)
+                    SoundFXManager.Instance.PlaySoundFXClip(moveSelfSoundClip, transform, 1f);
+                else if (playerTeam == Team.Black)
+                    SoundFXManager.Instance.PlaySoundFXClip(moveOpponentSoundClip, transform, 1f);
+            }
         }
 
         // Promotion - Promoción
@@ -560,6 +624,7 @@ public class Chessboard : MonoBehaviour
             {
                 if (targetPawn.team == 0 && lastMove[1].y == 7 || targetPawn.team == 1 && lastMove[1].y == 0)
                 {
+                    isPromoting = true;
                     // AI Random Promotion Choose
                     if ((gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot) &&
                         ((isWhiteTurn && playerTeam == Team.Black && chessClock.GetIsTimerWhite()) ||
@@ -576,6 +641,8 @@ public class Chessboard : MonoBehaviour
                             OnSetPromotionPiece(PromotionPieceType.Rook);
                         else if (promotionPieceProbability <= 94 + 3 + 2 + 1) // 99 .. 100 ~~ 1%
                             OnSetPromotionPiece(PromotionPieceType.Bishop);
+                        else // In case there is an error
+                            OnSetPromotionPiece(PromotionPieceType.Queen);
                     }
                     // Menu de eleccion
                     else
@@ -584,6 +651,9 @@ public class Chessboard : MonoBehaviour
                     }
                 }
             }
+
+            // play sound FX
+            SoundFXManager.Instance.PlaySoundFXClip(promoteSoundClip, transform, 1f);
         }
     }
     private void PreventCheck(ref ChessPiece[,] board, ChessPiece cPiece, ref List<Vector2Int> pMoves) // Before we move (while we are dragging a piece, in Update() function), check with a simulation if the king gonna be in danger, if so, remove that move as an possible option.
@@ -701,7 +771,7 @@ public class Chessboard : MonoBehaviour
     private int CheckForCheckmateAndDraws() // After the enemy moves (in MoveTo() function), check if our king is in danger or not (JAQUE), and check throught a simulation if we have any possible moves to do (TABLAS).
     {
         if (halfmoveClock > 150)
-            return 4; // DRAW - 75 MOVE RULE. TABLAS - REGLA DE LOS 75 MOVIMIENTOS.
+            return 5; // DRAW - 75 MOVE RULE. TABLAS - REGLA DE LOS 75 MOVIMIENTOS.
 
         // Which team's turn is it?
         var lastMove = moveList[moveList.Count - 1];
@@ -741,10 +811,10 @@ public class Chessboard : MonoBehaviour
                 SimulateMoveForSinglePiece(ref chessPieces, defendingPieces[i], ref defendingMoves, targetKing);
 
                 if (defendingMoves.Count != 0) // There is a piece that can protect our king or we can move our king
-                    return 0; // Game continue
+                    return 1; // CHECK. Game continue
             }
 
-            return 1; // CHECKMATE. There is no piece that can protect our king and we cant move it. Checkmate exit. JAQUEMATE.
+            return 2; // CHECKMATE. There is no piece that can protect our king and we cant move it. Checkmate exit. JAQUEMATE.
         }
         // NO estamos en JAQUE
         else
@@ -759,13 +829,13 @@ public class Chessboard : MonoBehaviour
                 if (defendingMoves.Count != 0) // There is a piece that can be moved or we can move our king
                 {
                     if (CheckDeadPosition(defendingPieces, attackingPieces))
-                        return 3; // DRAW - DEAD POSITION. TABLAS - POSICIÓN MUERTA.
+                        return 4; // DRAW - DEAD POSITION. TABLAS - POSICIÓN MUERTA.
 
-                    return 0; // Game continue
+                    return 0; // REGULAR MOVE. Game continue
                 }
             }
 
-            return 2; // DRAW - STALEMATE. There is no piece that can be moved. TABLAS - AHOGADO.
+            return 3; // DRAW - STALEMATE. There is no piece that can be moved. TABLAS - AHOGADO.
         }
 
         //return 0;
@@ -811,6 +881,8 @@ public class Chessboard : MonoBehaviour
         availableMoves.Clear();
         moveList.Clear();
 
+        isPromoting = false;
+
         isWhiteTurn = true;
         castlingWhiteKingSide = true;
         castlingWhiteQueenSide = true;
@@ -855,9 +927,13 @@ public class Chessboard : MonoBehaviour
 
         Vector2Int previousPosition = new Vector2Int(chessPiece.currentX, chessPiece.currentY);
 
+        bool pieceCapture = false;
+
         // Check if there is another piece on the target position and move it to dead positions
         if (chessPieces[x, y] != null)
         {
+            pieceCapture = true;
+
             ChessPiece otherChessPiece = chessPieces[x, y];
 
             // If its our team. 0 == 0 or 1 == 1. Dont Move.
@@ -875,7 +951,7 @@ public class Chessboard : MonoBehaviour
                 deadWhites.Add(otherChessPiece);
                 otherChessPiece.SetScale(Vector3.one * deathSize);
                 otherChessPiece.SetPosition(
-                    new Vector3(8 * tileSize, yOffset, 0) // Fuera de la tabla 0-7 --> -1 y 8. yOffset por la geometria de la tabla.
+                    new Vector3(8 * tileSize, deathOffset, 0) // Fuera de la tabla 0-7 --> -1 y 8. yOffset por la geometria de la tabla.
                     + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
                     + new Vector3((tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
                     + (Vector3.forward * (tileSize / 2)) * (deadWhites.Count - 1)); // Distancia entre las piezas derrotadas.
@@ -891,7 +967,7 @@ public class Chessboard : MonoBehaviour
                 deadBlacks.Add(otherChessPiece);
                 otherChessPiece.SetScale(Vector3.one * deathSize);
                 otherChessPiece.SetPosition(
-                    new Vector3(0, yOffset, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8. yOffset por la geometria de la tabla.
+                    new Vector3(0, deathOffset, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8. yOffset por la geometria de la tabla.
                     + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
                     + new Vector3(-(tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
                     + (Vector3.back * (tileSize / 2)) * (deadBlacks.Count - 1)); // Distancia entre las piezas derrotadas.
@@ -929,18 +1005,46 @@ public class Chessboard : MonoBehaviour
         // GAMEOVER. Comprobar si este movimiento es un JAQUEMATE o TABLAS. Si es asi, termina el juego.
         switch (CheckForCheckmateAndDraws())
         {
-            default: // Case 0. NO ocurre JAQUEMATE ni TABLAS
+            default: // Case 0. REGULAR MOVE. Game continue
+                // play sound FX
+                if (specialMove == SpecialMove.None)
+                {
+                    if (pieceCapture)
+                        SoundFXManager.Instance.PlaySoundFXClip(captureSoundClip, transform, 1f);
+                    else
+                    {
+                        if (playerTeam == Team.White)
+                            SoundFXManager.Instance.PlaySoundFXClip(moveSelfSoundClip, transform, 1f);
+                        else if (playerTeam == Team.Black)
+                            SoundFXManager.Instance.PlaySoundFXClip(moveOpponentSoundClip, transform, 1f);
+                    }
+                }
                 break;
-            case 1: // CHECKMATE. JAQUEMATE.
+            case 1: // CHECK. JAQUE. Game continue
+                // play sound FX
+                SoundFXManager.Instance.PlaySoundFXClip(moveCheckSoundClip, transform, 1f);
+                break;
+            case 2: // CHECKMATE. JAQUEMATE.
+                // play sound FX
+                SoundFXManager.Instance.PlaySoundFXClip(gameEndSoundClip, transform, 1f);
                 CheckMate(chessPiece.team);
                 break;
-            case 2: // DRAW - STALEMATE. TABLAS - AHOGADO.
+            case 3: // DRAW - STALEMATE. TABLAS - AHOGADO.
+                // play sound FX
+                SoundFXManager.Instance.PlaySoundFXClip(gameDrawSoundClip, transform, 1f);
+
                 CheckMate(2);
                 break;
-            case 3: // DRAW - DEAD POSITION. TABLAS - POSICIÓN MUERTA.
+            case 4: // DRAW - DEAD POSITION. TABLAS - POSICIÓN MUERTA.
+                // play sound FX
+                SoundFXManager.Instance.PlaySoundFXClip(gameDrawSoundClip, transform, 1f);
+
                 CheckMate(3);
                 break;
-            case 4: // DRAW - 75 MOVE RULE. TABLAS - REGLA DE LOS 75 MOVIMIENTOS.
+            case 5: // DRAW - 75 MOVE RULE. TABLAS - REGLA DE LOS 75 MOVIMIENTOS.
+                // play sound FX
+                SoundFXManager.Instance.PlaySoundFXClip(gameDrawSoundClip, transform, 1f);
+
                 CheckMate(4);
                 break;
         }
@@ -952,7 +1056,6 @@ public class Chessboard : MonoBehaviour
     }
     private void UpdateCastlingRights(ChessPiece lastPM, int x, int y)
     {
-
         if (lastPM.team == 0) // White team
         {
             if (castlingWhiteKingSide == true || castlingWhiteQueenSide == true) // One or both castling are possible

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Tables : MonoBehaviour
@@ -8,6 +6,9 @@ public class Tables : MonoBehaviour
     [SerializeField] private GameObject[] tables;
 
     private int table = 0;
+
+    [Header("Sounds")]
+    [SerializeField] private AudioClip changeTableSoundClip;
 
     public void ChangeTable()
     {
@@ -34,6 +35,9 @@ public class Tables : MonoBehaviour
             default:
                 break;
         }
+
+        // play sound FX
+        SoundFXManager.Instance.PlaySoundFXClip(changeTableSoundClip, transform, 1f);
     }
 
 }
