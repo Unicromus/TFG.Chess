@@ -360,7 +360,7 @@ Transform:
   m_GameObject: {fileID: 8231369876817089229}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.741, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -439,8 +439,12 @@ MonoBehaviour:
   yOffset: 0.0025
   boardCenter: {x: 0, y: 0.0175, z: 0}
   deathSize: 0.5
+  deathOffset: 0.005
+  dragOffset: 0.1
   victoryScreen: {fileID: 0}
-  prefabs:
+  promotionMenu: {fileID: 0}
+  chessClock: {fileID: 0}
+  piecePrefabs:
   - {fileID: 7489424017062205443, guid: ebdedd3bd7654ce4d8fbd45e7fd504c9, type: 3}
   - {fileID: 3445410288987921021, guid: 9f2aa77adb0917e40859c5aea003a1fb, type: 3}
   - {fileID: 5668936845212471155, guid: 50144131b60291541a7f1c84460e130c, type: 3}
@@ -450,3 +454,15 @@ MonoBehaviour:
   teamMaterials:
   - {fileID: 2100000, guid: 330c1b5e361993e40a921499b53bb3d9, type: 2}
   - {fileID: 2100000, guid: 0cfce7fa5a422b047a3cb3871c1feaa0, type: 2}
+  shoutoutSoundClip: {fileID: 8300000, guid: f6bc4ac92c267ee478a5e2b830a94865, type: 3}
+  resetSoundClip: {fileID: 8300000, guid: aa059613babfb5c4fbd00c747d81c739, type: 3}
+  captureSoundClip: {fileID: 8300000, guid: 14c0a056a4410ba4f89871d4ce32287d, type: 3}
+  castleSoundClip: {fileID: 8300000, guid: 09bfd892c9ec9f247a721d3119d86a7b, type: 3}
+  promoteSoundClip: {fileID: 8300000, guid: 02d97fd6f88467541972bfee8fa2e2ae, type: 3}
+  moveSelfSoundClip: {fileID: 8300000, guid: 3c8543ee806e91b4fafac48a2a14ec29, type: 3}
+  moveOpponentSoundClip: {fileID: 8300000, guid: 624886641accf0f4f84ffe59dafcff56, type: 3}
+  moveCheckSoundClip: {fileID: 8300000, guid: 102ae044097520d479083fbb7bdbb68c, type: 3}
+  gameDrawSoundClip: {fileID: 8300000, guid: 030d292e888ac004783337347bc2c77f, type: 3}
+  gameEndSoundClip: {fileID: 8300000, guid: 149a481f40326c94485fb393e90f01a8, type: 3}
+  gameWinSoundClip: {fileID: 8300000, guid: ee7684955bb3d3549a155de393c5f735, type: 3}
+  gameLoseSoundClip: {fileID: 8300000, guid: 7496dd714999fda4f90d7b35a31ac0cf, type: 3}

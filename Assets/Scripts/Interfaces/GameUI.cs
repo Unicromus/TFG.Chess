@@ -11,7 +11,7 @@ public class GameUI : MonoBehaviour
 
     [Header("Screens")]
     [SerializeField] private GameObject screenInGameUI;
-    [SerializeField] private GameObject screenCanvasClock;
+    //[SerializeField] private GameObject screenCanvasClock;
 
     [Header("Scripts Logic")]
     [SerializeField] private Chessboard chessBoard; // Tablero de Ajedrez
@@ -118,7 +118,7 @@ public class GameUI : MonoBehaviour
             screenInGameUI.transform.GetChild(0).gameObject.SetActive(false); // Set Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(1).gameObject.SetActive(false); // Get Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(2).gameObject.SetActive(false); // Spacer
-            screenInGameUI.transform.GetChild(3).gameObject.SetActive(false); // UI Clock
+            //screenInGameUI.transform.GetChild(3).gameObject.SetActive(false); // UI Clock
             screenInGameUI.transform.GetChild(4).gameObject.SetActive(false); // Change Table
             screenInGameUI.transform.GetChild(5).gameObject.SetActive(false); // Change Camera View
             screenInGameUI.transform.GetChild(6).gameObject.SetActive(false); // Spacer 01
@@ -131,7 +131,7 @@ public class GameUI : MonoBehaviour
             screenInGameUI.transform.GetChild(0).gameObject.SetActive(true); // Set Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(1).gameObject.SetActive(true); // Get Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(2).gameObject.SetActive(true); // Spacer
-            screenInGameUI.transform.GetChild(3).gameObject.SetActive(true); // UI Clock
+            //screenInGameUI.transform.GetChild(3).gameObject.SetActive(true); // UI Clock
             screenInGameUI.transform.GetChild(4).gameObject.SetActive(true); // Change Table
             screenInGameUI.transform.GetChild(5).gameObject.SetActive(true); // Change Camera View
             screenInGameUI.transform.GetChild(6).gameObject.SetActive(true); // Spacer 01
@@ -152,15 +152,15 @@ public class GameUI : MonoBehaviour
         chessBoard.OnSetForsythEdwardsNotation(chessS);
     }
 
-    public void OnCanvasClock()
-    {
-        if (screenCanvasClock.activeInHierarchy)
-            screenCanvasClock.SetActive(false);
-        else
-            screenCanvasClock.SetActive(true);
-        // play sound FX
-        SoundFXManager.Instance.PlaySoundFXClip(clickSoundClip, transform, 1f);
-    }
+    //public void OnCanvasClock()
+    //{
+    //    if (screenCanvasClock.activeInHierarchy)
+    //        screenCanvasClock.SetActive(false);
+    //    else
+    //        screenCanvasClock.SetActive(true);
+    //    // play sound FX
+    //    SoundFXManager.Instance.PlaySoundFXClip(clickSoundClip, transform, 1f);
+    //}
 
     public void OnMenuButton()
     {

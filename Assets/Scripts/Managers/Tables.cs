@@ -10,31 +10,26 @@ public class Tables : MonoBehaviour
     [Header("Sounds")]
     [SerializeField] private AudioClip changeTableSoundClip;
 
+    public void Awake()
+    {
+        for (int i = 0; i < tables.Length; i++)
+        {
+            if (tables[i].activeSelf)
+            {
+                table = i;
+                return;
+            }
+        }
+    }
+
     public void ChangeTable()
     {
+        tables[table].SetActive(false);
         table++;
+
         if (table >= tables.Length)
             table = 0;
-
-        switch(table) {
-            case 0:
-                tables[0].gameObject.SetActive(true);
-                tables[1].gameObject.SetActive(false);
-                tables[2].gameObject.SetActive(false);
-                break;
-            case 1:
-                tables[0].gameObject.SetActive(false);
-                tables[1].gameObject.SetActive(true);
-                tables[2].gameObject.SetActive(false);
-                break;
-            case 2:
-                tables[0].gameObject.SetActive(false);
-                tables[1].gameObject.SetActive(false);
-                tables[2].gameObject.SetActive(true);
-                break;
-            default:
-                break;
-        }
+        tables[table].SetActive(true);
 
         // play sound FX
         SoundFXManager.Instance.PlaySoundFXClip(changeTableSoundClip, transform, 1f);
