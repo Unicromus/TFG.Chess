@@ -38,12 +38,13 @@ public class Chessboard : MonoBehaviour
     [Header("Art stuff")]
     [SerializeField] private Material tileMaterial; // El material de las baldosas invisibles.
     [SerializeField] private float tileSize = 0.05f; // El tamaño de cada baldosa invisible.
-    [SerializeField] private float yOffset = 0.0025f; // La distancia entre el centro del tablero y las baldosas invisibles.
-    [SerializeField] private Vector3 boardCenter = new Vector3(0f, 0.0175f, 0f); // El centro del tablero (las baldosas visibles). Esta variable se debe actualizar al cambiar de geometria del tablero.
+    [SerializeField] private float yOffset = 0.0025f; // La distancia entre el centro del tablero (las baldosas visibles) y las baldosas invisibles.
+    [SerializeField] private Vector3 boardCenterOffSet = new Vector3(0f, 0.0175f, 0f); // Representa la distancia entre el centro del tablero (transform) y las baldosas visibles.
+                                                                                       // Esta variable se debe actualizar al cambiar de geometria del tablero.
     [SerializeField] private float deathSize = 0.5f; // El tamaño de las piezas derrotadas.
-    [SerializeField] private float deathOffset = 0.005f; // El tamaño de las piezas derrotadas.
+    [SerializeField] private float deathOffset = 0.005f; // La altura extra de la geometria del tablero para colocar las piezas derrotadas.
     //[SerializeField] private float deathSpacing = 0.3f; // El espacio entre cada pieza derrotada.
-    [SerializeField] private float dragOffset = 0.1f; // La distancia para elevar las piezas a la hora de moverlas.
+    [SerializeField] private float dragOffset = 0.1f; // La distancia para elevar las piezas a la hora de moverlas o hubicarlas.
 
     [Header("Victory screen")]
     [SerializeField] private GameObject victoryScreen; // Canvas Victory Panel.
@@ -55,6 +56,7 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private ChessClock chessClock; // Reloj Digital.
 
     [Header("Prefabs & Materials")]
+    [SerializeField] private Transform storePieces; // El padre donde guardar las piezas de ajedrez.
     [SerializeField] private GameObject[] piecePrefabs; // Los prefabs de las piezas de ajedrez.
     [SerializeField] private Material[] teamMaterials; // Los materiales de los equipos del ajedrez, blanco y negro.
 
@@ -83,6 +85,7 @@ public class Chessboard : MonoBehaviour
     private GameObject[,] tiles; // Las baldosas invisibles 8x8.
     private Camera currentCamera; // La camara actual.
     private Vector2Int currentHover; // Cursor actual.
+    private Vector3 boardCenter; // El centro del tablero (las baldosas visibles). boardCenter = transform + boardCenterOffSet
     private Vector3 bounds; // Los limites del tablero. En este caso se utiliza para saber el punto inicial desde donde generar las baldosas invisibles.
 
     private SpecialMove specialMove; // Puede ser 0, EnPassant, Castling o Promotion.
@@ -126,7 +129,8 @@ public class Chessboard : MonoBehaviour
 
         timeDelay = 2.0f;
 
-        boardCenter += transform.position;
+        boardCenter = boardCenterOffSet;
+        bounds = new Vector3(-(TILE_COUNT_X / 2) * tileSize, 0, -(TILE_COUNT_Y / 2) * tileSize) + boardCenter;
         GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y);
         SpawnAllPieces();
         PositionAllpieces();
@@ -134,18 +138,40 @@ public class Chessboard : MonoBehaviour
 
     private void Update()
     {
+        /* Recordar aplicar transform.TransformPoint a las transformaciones locales para calcular su posición global.
+         * De esta forma, se tendra en cuenta los cambios de las transformaciónes del tablero, en caso de que se haya movido, rotado o escalado.
+         * Se debe aplicar al final, despues de haber calculado todas las transformaciones locales.
+         * Se utiliza sobre todo al llamar a la función Piece.SetPositionWithLimits, ya que hay que pasarle la posición global.
+         */
+        boardCenter = boardCenterOffSet; 
+        bounds = new Vector3(-(TILE_COUNT_X / 2) * tileSize, 0, -(TILE_COUNT_Y / 2) * tileSize) + boardCenter;
+
         if (!currentCamera)
         {
             currentCamera = Camera.main;
             return;
         }
 
-        RaycastHit info;
+        RaycastHit hit;
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))
+        Debug.DrawRay(ray.origin, ray.direction * 100, Color.red, 1.0f); // Dibujar el raycast para saber donde apunta.
+
+        //RaycastHit[] hits = Physics.RaycastAll(ray, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")); // Obtener todos los objetos golpeados por el raycast
+        //foreach (var hit in hits)
+        //{
+
+        //if (hit.transform.gameObject.layer == LayerMask.NameToLayer("Tile") || 
+        //    hit.transform.gameObject.layer == LayerMask.NameToLayer("Hover") || 
+        //    hit.transform.gameObject.layer == LayerMask.NameToLayer("Highlight"))
+
+        // El Raycast solo detectara los objetos con las mascaras definidas en GetMask
+        if (Physics.Raycast(ray, out hit, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))
         {
             // Get the indexes of the tile i have hit
-            Vector2Int hitPosition = LookupTileIndex(info.transform.gameObject);
+            //Vector2Int hitPosition = LookupTileIndex(info.transform.gameObject); // CUIDADO: si el padre tiene rigidbody, info.transform.gameObject referencia al padre.
+            Vector2Int hitPosition = LookupTileIndex(hit.collider.transform.gameObject); // CUIDADO: si el padre tiene rigidbody, info.collider.transform.gameObject referencia al collider (hijo en este caso).
+
+            //Debug.Log("Hit: " + hit.collider.transform.gameObject);
 
             // If we are hovering a tile after not hovering any tiles
             if (currentHover == -Vector2Int.one)
@@ -201,7 +227,11 @@ public class Chessboard : MonoBehaviour
 
                 bool validMove = MoveTo(currentlyDragging, hitPosition.x, hitPosition.y);
                 if (!validMove)
-                    currentlyDragging.SetPosition(GetTileCenter(previousPosition.x, previousPosition.y));
+                {
+                    // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                    // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                    currentlyDragging.SetPositionWithLimits(transform.TransformPoint(GetTileCenter(previousPosition.x, previousPosition.y)), transform.rotation.eulerAngles, tileSize / 4, false);
+                }
 
                 currentlyDragging = null;
                 RemoveHighlightTiles(); // Every time we stop dragging a piece we remove the HighlightTiles
@@ -218,25 +248,35 @@ public class Chessboard : MonoBehaviour
             }
             if (currentlyDragging && Input.GetMouseButtonUp(0)) // Si soltamos una pieza fuera de la tabla, restablecemos su posicion anterior
             {
-                currentlyDragging.SetPosition(GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY));
+                // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                currentlyDragging.SetPositionWithLimits(transform.TransformPoint(GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY)), transform.rotation.eulerAngles, tileSize / 4, false);
                 currentlyDragging = null;
                 RemoveHighlightTiles(); // Every time we stop dragging a piece we remove the HighlightTiles
             }
         }
 
+
         // If we're dragging a piece
         if (currentlyDragging)
         {
-            Plane horizontalPlane = new Plane(Vector3.up, Vector3.up * (yOffset + boardCenter.y)); // invisible Plane for Raycast
+            if (!currentlyDragging.GetComponent<Rigidbody>().isKinematic)
+                currentlyDragging.GetComponent<Rigidbody>().isKinematic = true; // Set Kinematic true a la pieza mientras se agarra para que no le afecte las fisicas.
+
+            Plane horizontalPlane = new Plane(Vector3.up, Vector3.up * (2*yOffset + transform.position.y + boardCenter.y)); // invisible Plane for Raycast
             float distance = 0.0f;
             // if ray in camera view hits horizontalPlane (should happen always). distance will be the distance between horizontalPlane and raycast.
             if (horizontalPlane.Raycast(ray, out distance))
-                currentlyDragging.SetPosition(ray.GetPoint(distance) + (Vector3.up * dragOffset)); // distance is used to move smoothly the piece that is currentlyDragging.
+            {
+                // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                currentlyDragging.SetPositionWithLimits(ray.GetPoint(distance) + (Vector3.up * dragOffset), transform.rotation.eulerAngles, 0.0f); // distance is used to move smoothly the piece that is currentlyDragging.
+            }
         }
 
         /* Random AI Bot Move */
         if ((gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot) &&
-            ((isWhiteTurn && playerTeam == Team.Black && chessClock.GetIsTimerWhite()) || 
+            ((isWhiteTurn && playerTeam == Team.Black && chessClock.GetIsTimerWhite()) ||
             (!isWhiteTurn && playerTeam == Team.White && chessClock.GetIsTimerBlack())))
         {
             if (timeDelay > 0) // Tiempo de espera - CONTADOR
@@ -251,7 +291,7 @@ public class Chessboard : MonoBehaviour
                     RandomMove(isWhiteTurn); // Movimiento de la IA
 
                     // Press Clock
-                    if(playerTeam == Team.White)
+                    if (playerTeam == Team.White)
                         chessClock.BlackSwap();
                     if (playerTeam == Team.Black)
                         chessClock.WhiteSwap();
@@ -278,8 +318,6 @@ public class Chessboard : MonoBehaviour
     // Generate the board. Se generan las baldosas.
     private void GenerateAllTiles(float tileSize, int tileCountX, int tileCountY)
     {
-        bounds = new Vector3(-(tileCountX / 2) * tileSize, 0, -(tileCountX / 2) * tileSize) + boardCenter;
-
         tiles = new GameObject[tileCountX, tileCountY];
         for (int x = 0; x < tileCountX; x++)
             for (int y = 0; y < tileCountY; y++)
@@ -295,10 +333,10 @@ public class Chessboard : MonoBehaviour
         tileObject.AddComponent<MeshRenderer>().material = tileMaterial;
 
         Vector3[] vertices = new Vector3[4];
-        vertices[0] = new Vector3(x * tileSize, yOffset, y * tileSize) + bounds;
-        vertices[1] = new Vector3(x * tileSize, yOffset, (y + 1) * tileSize) + bounds;
-        vertices[2] = new Vector3((x + 1) * tileSize, yOffset, y * tileSize) + bounds;
-        vertices[3] = new Vector3((x + 1) * tileSize, yOffset, (y + 1) * tileSize) + bounds;
+        vertices[0] = transform.TransformPoint(new Vector3(x * tileSize, yOffset, y * tileSize) + bounds);
+        vertices[1] = transform.TransformPoint(new Vector3(x * tileSize, yOffset, (y + 1) * tileSize) + bounds);
+        vertices[2] = transform.TransformPoint(new Vector3((x + 1) * tileSize, yOffset, y * tileSize) + bounds);
+        vertices[3] = transform.TransformPoint(new Vector3((x + 1) * tileSize, yOffset, (y + 1) * tileSize) + bounds);
 
         int[] tris = new int[] { 0, 1, 2, 1, 3, 2 };
 
@@ -307,7 +345,8 @@ public class Chessboard : MonoBehaviour
         mesh.RecalculateNormals();
 
         tileObject.layer = LayerMask.NameToLayer("Tile");
-        tileObject.AddComponent<BoxCollider>();
+        var collider = tileObject.AddComponent<BoxCollider>();
+        collider.isTrigger = true;
 
         return tileObject;
     }
@@ -345,7 +384,11 @@ public class Chessboard : MonoBehaviour
     }
     private ChessPiece SpawnSinglePiece(ChessPieceType type, int team)
     {
-        ChessPiece cp = Instantiate(piecePrefabs[(int)type - 1], transform).GetComponent<ChessPiece>(); // we do -1 because ChessPieceType has None 0
+        // Se instancia la pieza(prefab). 
+        ChessPiece cp = Instantiate(piecePrefabs[(int)type - 1], // we do -1 because ChessPieceType has None 0
+            transform.position + new Vector3(0f, dragOffset, 0f), // se instancia encima del centro del tablero
+            Quaternion.Euler(new Vector3(0, 0, 0)), 
+            storePieces).GetComponent<ChessPiece>(); // Puede ser teniendo como padre al mismo tablero (transform) o en un gameobject nuevo (storePieces).
 
         cp.type = type; // type: 0-6
         cp.team = team; // team: 0 white | 1 black
@@ -367,11 +410,50 @@ public class Chessboard : MonoBehaviour
     {
         chessPieces[x, y].currentX = x;
         chessPieces[x, y].currentY = y;
-        chessPieces[x, y].SetPosition(GetTileCenter(x, y), force);
+        // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+        // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+        chessPieces[x, y].SetPositionWithLimits(transform.TransformPoint(GetTileCenter(x, y)), transform.rotation.eulerAngles, tileSize / 4, force);
     }
     private Vector3 GetTileCenter(int x, int y)
     {
-        return new Vector3(x * tileSize, yOffset, y * tileSize) + bounds + new Vector3(tileSize / 2, 0, tileSize / 2);
+        // numero y altura de baldosa invisible + inicio y altura de las baldosas invisibles + el centro de la valdosa invisible + altura segura para no chocar con otras piezas
+        return new Vector3(x * tileSize, yOffset, y * tileSize) + bounds + new Vector3(tileSize / 2, 0, tileSize / 2) + new Vector3(0, dragOffset, 0);
+    }
+    // Repositioning. Se vuelven a colocar las piezas en su lugar correspondiente, segun el estado en el que se encuentra la partida.
+    private void RePositionAllPieces()
+    {
+        for (int x = 0; x < TILE_COUNT_X; x++)
+            for (int y = 0; y < TILE_COUNT_Y; y++)
+                if (chessPieces[x, y] != null)
+                    PositionSinglePiece(chessPieces[x, y].currentX, chessPieces[x, y].currentY, true);
+
+        for (int i = 0; i < deadWhites.Count; i++)
+        {
+            // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+            // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+            deadWhites[i].SetPositionWithLimits(transform.TransformPoint(
+                new Vector3(8 * tileSize, 0, 0) // Fuera de la tabla 0-7 --> -1 y 8.
+                + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
+                + new Vector3((tileSize), deathOffset + dragOffset, 0) // Distancia y altura extra para posicionar segun la geometria de la tabla.
+                + (Vector3.forward * (tileSize / 2)) * (i)), // Distancia entre las piezas derrotadas.
+                transform.rotation.eulerAngles,
+                tileSize / 16, true); // Los limites donde la pieza permanece dentro
+        }
+        for (int i = 0; i < deadBlacks.Count; i++)
+        {
+            // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+            // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+            deadBlacks[i].SetPositionWithLimits(transform.TransformPoint(
+                new Vector3(0, 0, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8.
+                + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
+                + new Vector3(-(tileSize), deathOffset + dragOffset, 0) // Distancia y altura extra para posicionar segun la geometria de la tabla.
+                + (Vector3.back * (tileSize / 2)) * (i)), // Distancia entre las piezas derrotadas.
+                transform.rotation.eulerAngles,
+                tileSize / 16, true); // Los limites donde la pieza permanece dentro
+        }
+
+        // play sound FX
+        SoundFXManager.Instance.PlaySoundFXClip(resetSoundClip, transform, 1f);
     }
 
     // Highlight Tiles. Se resaltan las baldosas con los movimientos posibles.
@@ -503,9 +585,13 @@ public class Chessboard : MonoBehaviour
             HidePromotionMenu();
         }
     }
+    public void OnRePositionAllPieces()
+    {
+        RePositionAllPieces();
+    }
 
     // Getters & Setters
-    public void SetGameMode (GameMode gMode)
+    public void SetGameMode(GameMode gMode)
     {
         gameMode = gMode;
     }
@@ -525,6 +611,10 @@ public class Chessboard : MonoBehaviour
     public bool GetIsPromoting()
     {
         return isPromoting;
+    }
+    public ChessPiece GetCurrentlyDragging()
+    {
+        return currentlyDragging;
     }
 
     // Special Moves
@@ -546,21 +636,29 @@ public class Chessboard : MonoBehaviour
                     {
                         deadWhites.Add(enemyPawn);
                         enemyPawn.SetScale(Vector3.one * deathSize);
-                        enemyPawn.SetPosition(
-                            new Vector3(8 * tileSize, deathOffset, 0) // Fuera de la tabla 0-7 --> -1 y 8. x2 yOffset por la geometria de la tabla.
+                        // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                        // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                        enemyPawn.SetPositionWithLimits(transform.TransformPoint(
+                            new Vector3(8 * tileSize, 0, 0) // Fuera de la tabla 0-7 --> -1 y 8.
                             + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
-                            + new Vector3((tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
-                            + (Vector3.forward * (tileSize / 2)) * (deadWhites.Count - 1)); // Distancia entre las piezas derrotadas.
+                            + new Vector3((tileSize), deathOffset + dragOffset, 0) // Distancia y altura extra para posicionar segun la geometria de la tabla.
+                            + (Vector3.forward * (tileSize / 2)) * (deadWhites.Count - 1)), // Distancia entre las piezas derrotadas.
+                            transform.rotation.eulerAngles,
+                            tileSize / 16); // Los limites donde la pieza permanece dentro
                     }
                     else // enemyPawn.team == 1. Black Pawn
                     {
                         deadBlacks.Add(enemyPawn);
                         enemyPawn.SetScale(Vector3.one * deathSize);
-                        enemyPawn.SetPosition(
-                            new Vector3(0, deathOffset, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8. x2 yOffset por la geometria de la tabla.
+                        // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                        // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                        enemyPawn.SetPositionWithLimits(transform.TransformPoint(
+                            new Vector3(0, 0, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8.
                             + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
-                            + new Vector3(-(tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
-                            + (Vector3.back * (tileSize / 2)) * (deadBlacks.Count - 1)); // Distancia entre las piezas derrotadas.
+                            + new Vector3(-(tileSize), deathOffset + dragOffset, 0) // Distancia y altura extra para posicionar segun la geometria de la tabla.
+                            + (Vector3.back * (tileSize / 2)) * (deadBlacks.Count - 1)), // Distancia entre las piezas derrotadas.
+                            transform.rotation.eulerAngles,
+                            tileSize / 16); // Los limites donde la pieza permanece dentro
                     }
                     chessPieces[enemyPawn.currentX, enemyPawn.currentY] = null;
 
@@ -950,11 +1048,15 @@ public class Chessboard : MonoBehaviour
                 // Else, move dead Piece
                 deadWhites.Add(otherChessPiece);
                 otherChessPiece.SetScale(Vector3.one * deathSize);
-                otherChessPiece.SetPosition(
-                    new Vector3(8 * tileSize, deathOffset, 0) // Fuera de la tabla 0-7 --> -1 y 8. yOffset por la geometria de la tabla.
+                // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                otherChessPiece.SetPositionWithLimits(transform.TransformPoint(
+                    new Vector3(8 * tileSize, 0, 0) // Fuera de la tabla 0-7 --> -1 y 8.
                     + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
-                    + new Vector3((tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
-                    + (Vector3.forward * (tileSize / 2)) * (deadWhites.Count - 1)); // Distancia entre las piezas derrotadas.
+                    + new Vector3((tileSize), deathOffset + dragOffset, 0) // Distancia y altura extra para posicionar segun la geometria de la tabla.
+                    + (Vector3.forward * (tileSize / 2)) * (deadWhites.Count - 1)), // Distancia entre las piezas derrotadas.
+                    transform.rotation.eulerAngles,
+                    tileSize / 16); // Los limites donde la pieza permanece dentro
             }
             // If its the enemy team and we are white
             else
@@ -966,11 +1068,15 @@ public class Chessboard : MonoBehaviour
                 // Else, move dead Piece
                 deadBlacks.Add(otherChessPiece);
                 otherChessPiece.SetScale(Vector3.one * deathSize);
-                otherChessPiece.SetPosition(
-                    new Vector3(0, deathOffset, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8. yOffset por la geometria de la tabla.
+                // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                otherChessPiece.SetPositionWithLimits(transform.TransformPoint(
+                    new Vector3(0, 0, 8 * tileSize) // Fuera de la tabla 0-7 --> -1 y 8.
                     + bounds // Punto inicial desde donde se generan las baldosas. Contiene boardCenter.
-                    + new Vector3(-(tileSize), 0, 0) // Distancia extra para posicionar segun la geometria de la tabla.
-                    + (Vector3.back * (tileSize / 2)) * (deadBlacks.Count - 1)); // Distancia entre las piezas derrotadas.
+                    + new Vector3(-(tileSize), deathOffset + dragOffset, 0) // Distancia y altura extra para posicionar segun la geometria de la tabla.
+                    + (Vector3.back * (tileSize / 2)) * (deadBlacks.Count - 1)), // Distancia entre las piezas derrotadas.
+                    transform.rotation.eulerAngles,
+                    tileSize / 16); // Los limites donde la pieza permanece dentro
             }
         }
 
@@ -1558,10 +1664,10 @@ public class Chessboard : MonoBehaviour
         currentlyDragging = chessPieces[randomPiece.currentX, randomPiece.currentY];
 
         availableMoves = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y); // Get a list of available moves of the piece that is currently dragging.
-        
+
         specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref availableMoves,
             castlingWhiteKingSide, castlingWhiteQueenSide, castlingBlackKingSide, castlingBlackQueenSide, possibleEnPassantTarget); // Get what special move is possible and add the special move to available moves.
-        
+
         PreventCheck(ref chessPieces, currentlyDragging, ref availableMoves); // Check if our king will be in danger if we move our piece, if so, remove that move as an possible option.
 
         /* Choose a random move */
@@ -1578,7 +1684,11 @@ public class Chessboard : MonoBehaviour
 
         bool validMove = MoveTo(currentlyDragging, randomMove.x, randomMove.y);
         if (!validMove)
-            currentlyDragging.SetPosition(GetTileCenter(previousPosition.x, previousPosition.y));
+        {
+            // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+            // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+            currentlyDragging.SetPositionWithLimits(transform.TransformPoint(GetTileCenter(previousPosition.x, previousPosition.y)), transform.rotation.eulerAngles, tileSize / 4, false);
+        }
 
         /* Reset References */
         currentlyDragging = null;
@@ -1678,7 +1788,11 @@ public class Chessboard : MonoBehaviour
 
         bool validMove = MoveTo(currentlyDragging, randomMove.x, randomMove.y);
         if (!validMove)
-            currentlyDragging.SetPosition(GetTileCenter(previousPosition.x, previousPosition.y));
+        {
+            // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+            // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+            currentlyDragging.SetPositionWithLimits(transform.TransformPoint(GetTileCenter(previousPosition.x, previousPosition.y)), transform.rotation.eulerAngles, tileSize / 4, false);
+        }
 
         /* Reset References */
         currentlyDragging = null;

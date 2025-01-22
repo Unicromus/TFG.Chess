@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 1383877628043628386}
   - component: {fileID: 3805667128409226152}
   - component: {fileID: -2420657638739081321}
+  - component: {fileID: -2712656934552887019}
+  - component: {fileID: -1924357357617093927}
+  - component: {fileID: 2271141066056762972}
   m_Layer: 0
   m_Name: A.F.B.02.Torre
   m_TagString: Untagged
@@ -100,3 +103,72 @@ MonoBehaviour:
   currentX: 0
   currentY: 0
   type: 0
+--- !u!54 &-2712656934552887019
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3445410288987921021}
+  serializedVersion: 4
+  m_Mass: 0.014
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 2
+--- !u!65 &-1924357357617093927
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3445410288987921021}
+  m_Material: {fileID: 13400000, guid: 00c193162925ca24c9397ac2fcc95993, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.02, y: 0.03314497, z: 0.02}
+  m_Center: {x: 0, y: 0.028374007, z: -0.000000007450581}
+--- !u!65 &2271141066056762972
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3445410288987921021}
+  m_Material: {fileID: 13400000, guid: 00c193162925ca24c9397ac2fcc95993, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.025376467, y: 0.012333198, z: 0.025376484}
+  m_Center: {x: 0, y: 0.006166599, z: -0.000000007450581}

@@ -118,26 +118,30 @@ public class GameUI : MonoBehaviour
             screenInGameUI.transform.GetChild(0).gameObject.SetActive(false); // Set Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(1).gameObject.SetActive(false); // Get Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(2).gameObject.SetActive(false); // Spacer
-            //screenInGameUI.transform.GetChild(3).gameObject.SetActive(false); // UI Clock
-            screenInGameUI.transform.GetChild(4).gameObject.SetActive(false); // Change Table
-            screenInGameUI.transform.GetChild(5).gameObject.SetActive(false); // Change Camera View
-            screenInGameUI.transform.GetChild(6).gameObject.SetActive(false); // Spacer 01
-            screenInGameUI.transform.GetChild(7).gameObject.SetActive(false); // ReStart
-            screenInGameUI.transform.GetChild(8).gameObject.SetActive(false); // Menu
-            screenInGameUI.transform.GetChild(9).gameObject.SetActive(false); // Spacer 02
+            screenInGameUI.transform.GetChild(3).gameObject.SetActive(false); // OnRePositionAllPieces
+            screenInGameUI.transform.GetChild(4).gameObject.SetActive(false); // Spacer 01
+            //screenInGameUI.transform.GetChild(5).gameObject.SetActive(false); // UI Clock
+            screenInGameUI.transform.GetChild(6).gameObject.SetActive(false); // Change Table
+            screenInGameUI.transform.GetChild(7).gameObject.SetActive(false); // Change Camera View
+            screenInGameUI.transform.GetChild(8).gameObject.SetActive(false); // Spacer 02
+            screenInGameUI.transform.GetChild(9).gameObject.SetActive(false); // ReStart
+            screenInGameUI.transform.GetChild(10).gameObject.SetActive(false); // Menu
+            screenInGameUI.transform.GetChild(11).gameObject.SetActive(false); // Spacer 03
         }
         else
         {
             screenInGameUI.transform.GetChild(0).gameObject.SetActive(true); // Set Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(1).gameObject.SetActive(true); // Get Forsyth Edwards Notation
             screenInGameUI.transform.GetChild(2).gameObject.SetActive(true); // Spacer
-            //screenInGameUI.transform.GetChild(3).gameObject.SetActive(true); // UI Clock
-            screenInGameUI.transform.GetChild(4).gameObject.SetActive(true); // Change Table
-            screenInGameUI.transform.GetChild(5).gameObject.SetActive(true); // Change Camera View
-            screenInGameUI.transform.GetChild(6).gameObject.SetActive(true); // Spacer 01
-            screenInGameUI.transform.GetChild(7).gameObject.SetActive(true); // ReStart
-            screenInGameUI.transform.GetChild(8).gameObject.SetActive(true); // Menu
-            screenInGameUI.transform.GetChild(9).gameObject.SetActive(true); // Spacer 02
+            screenInGameUI.transform.GetChild(3).gameObject.SetActive(true); // OnRePositionAllPieces
+            screenInGameUI.transform.GetChild(4).gameObject.SetActive(true); // Spacer 01
+            //screenInGameUI.transform.GetChild(5).gameObject.SetActive(true); // UI Clock
+            screenInGameUI.transform.GetChild(6).gameObject.SetActive(true); // Change Table
+            screenInGameUI.transform.GetChild(7).gameObject.SetActive(true); // Change Camera View
+            screenInGameUI.transform.GetChild(8).gameObject.SetActive(true); // Spacer 02
+            screenInGameUI.transform.GetChild(9).gameObject.SetActive(true); // ReStart
+            screenInGameUI.transform.GetChild(10).gameObject.SetActive(true); // Menu
+            screenInGameUI.transform.GetChild(11).gameObject.SetActive(true); // Spacer 03
         }
         // play sound FX
         SoundFXManager.Instance.PlaySoundFXClip(clickSoundClip, transform, 1f);
@@ -150,6 +154,11 @@ public class GameUI : MonoBehaviour
     public void OnSetForsythEdwardsNotation(String chessS)
     {
         chessBoard.OnSetForsythEdwardsNotation(chessS);
+    }
+
+    public void OnRePositionAllPieces()
+    {
+        chessBoard.OnRePositionAllPieces();
     }
 
     //public void OnCanvasClock()

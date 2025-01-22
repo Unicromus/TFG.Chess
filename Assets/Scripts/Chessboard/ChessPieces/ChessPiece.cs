@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,19 +21,70 @@ public class ChessPiece : MonoBehaviour
     public int currentY;
     public ChessPieceType type;
 
+    private int speed = 10;
     private Vector3 desiredPosition;
+    private Vector3 desiredRotation;
     private Vector3 desiredScale = Vector3.one;
+
+    private float tileLimits = 1; // Los limites donde la pieza permanece dentro
+
+    private bool isKinematic = false; // Si la pieza es Kinematic
+
+    private bool isFree = true; // Si la pieza es libre del update. Para dejar de actualizar su transform
 
     private void Start()
     {
-        transform.rotation = Quaternion.Euler((team == 1) ? Vector3.zero : new Vector3(0, 180, 0)); // Se rotan 180 grados las piezas negras.
+        transform.rotation = Quaternion.Euler((team == 1) ? Vector3.zero : new Vector3(0, 180, 0)); // Se rotan 180 grados las piezas blancas.
     }
 
     private void Update()
     {
-        // Vector3.Lerp(Vector3 a, Vector3 b, float t) sirve para mover un objeto gradualmente entre dos puntos.
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
-        transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
+        if (!isFree)
+        {
+            if ((transform.position.x < desiredPosition.x - tileLimits || transform.position.x > desiredPosition.x + tileLimits) ||
+                (transform.position.z < desiredPosition.z - tileLimits || transform.position.z > desiredPosition.z + tileLimits))
+            {
+                if (!isKinematic)
+                {
+                    GetComponent<Rigidbody>().isKinematic = true; // Set Kinematic true mientras se mueve la pieza
+                    isKinematic = true;
+                }
+
+                // Vector3.Lerp(Vector3 a, Vector3 b, float t) sirve para mover un objeto gradualmente entre dos puntos. Lo mismo para la rotacion
+                transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * speed);
+                transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * speed);
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(desiredRotation), Time.deltaTime * speed);
+            }
+            else
+            {
+                if (isKinematic)
+                {
+                    GetComponent<Rigidbody>().isKinematic = false; // Set Kinematic false cuando no se mueva la pieza
+                    isKinematic = false;
+                    isFree = true;
+                }
+            }
+        }
+    }
+
+    public virtual void SetPositionWithLimits(Vector3 position, Vector3 rotation, float limits, bool force = false)
+    {
+        desiredPosition = position;
+        desiredRotation = (team == 1) ? rotation : rotation + new Vector3(0, 180, 0);
+        if (force)
+        {
+            transform.position = desiredPosition;
+            transform.rotation = Quaternion.Euler(desiredRotation);
+        }
+
+        tileLimits = limits;
+        isFree = false;
+    }
+    public virtual void SetScale(Vector3 scale, bool force = false)
+    {
+        desiredScale = scale;
+        if (force)
+            transform.localScale = desiredScale;
     }
 
     public List<Vector2Int> GetAllEnemyAvailableMoves(ref ChessPiece[,] board)
@@ -73,16 +125,4 @@ public class ChessPiece : MonoBehaviour
         return SpecialMove.None;
     }
 
-    public virtual void SetPosition(Vector3 position, bool force = false)
-    {
-        desiredPosition = position;
-        if (force)
-            transform.position = desiredPosition;
-    }
-    public virtual void SetScale(Vector3 scale, bool force = false)
-    {
-        desiredScale = scale;
-        if (force)
-            transform.localScale = desiredScale;
-    }
 }
