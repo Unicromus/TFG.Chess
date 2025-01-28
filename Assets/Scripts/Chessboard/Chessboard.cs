@@ -107,9 +107,13 @@ public class Chessboard : MonoBehaviour
     private GameMode gameMode;
     private Team playerTeam;
 
-    private const int MIN_TIME_DELAY = 2; // el tiempo MÍNIMO que puede llegar a tardar la IA en hacer un movimiento.
-    private const int MAX_TIME_DELAY = 11; // el tiempo MÁXIMO que puede llegar a tardar la IA en hacer un movimiento.
-    private float timeDelay; // el tiempo que tarda la IA en hacer un movimiento.
+    private const int MIN_TIME_DELAY_MOVE = 2; // el tiempo MÍNIMO que puede llegar a tardar la IA en hacer un movimiento.
+    private const int MAX_TIME_DELAY_MOVE = 11; // el tiempo MÁXIMO que puede llegar a tardar la IA en hacer un movimiento.
+    private float timeDelayMove; // el tiempo que tarda la IA en hacer un movimiento.
+
+    private const float TIME_DELAY_CLOCK = 1.0f;
+    private float timeDelayClock; // el tiempo que tarda la IA en cambiar de turno con el reloj.
+    private bool botNeedPressClock; // determina cuando empezar a contar los segundos para darle al cambio de turno con el reloj
 
     private void Awake()
     {
@@ -127,7 +131,9 @@ public class Chessboard : MonoBehaviour
         gameMode = GameMode.OnePlayer;
         playerTeam = Team.White;
 
-        timeDelay = 2.0f;
+        timeDelayMove = 2.0f;
+        timeDelayClock = 2.0f;
+        botNeedPressClock = false;
 
         boardCenter = boardCenterOffSet;
         bounds = new Vector3(-(TILE_COUNT_X / 2) * tileSize, 0, -(TILE_COUNT_Y / 2) * tileSize) + boardCenter;
@@ -279,39 +285,51 @@ public class Chessboard : MonoBehaviour
             ((isWhiteTurn && playerTeam == Team.Black && chessClock.GetIsTimerWhite()) ||
             (!isWhiteTurn && playerTeam == Team.White && chessClock.GetIsTimerBlack())))
         {
-            if (timeDelay > 0) // Tiempo de espera - CONTADOR
-                timeDelay -= Time.deltaTime;
+            if (timeDelayMove > 0) // Tiempo de espera - CONTADOR
+                timeDelayMove -= Time.deltaTime;
 
             if (gameMode == GameMode.PlayerVSRandomBot)
             {
-                if (timeDelay <= 0) // Tiempo de espera - FINALIZADO
+                if (timeDelayMove <= 0) // Tiempo de espera - FINALIZADO
                 {
-                    timeDelay = UnityEngine.Random.Range(MIN_TIME_DELAY, MAX_TIME_DELAY); // Tiempo de espera - ACTUALIZADO
+                    timeDelayMove = UnityEngine.Random.Range(MIN_TIME_DELAY_MOVE, MAX_TIME_DELAY_MOVE); // Tiempo de espera - ACTUALIZADO
 
                     RandomMove(isWhiteTurn); // Movimiento de la IA
 
-                    // Press Clock
-                    if (playerTeam == Team.White)
-                        chessClock.BlackSwap();
-                    if (playerTeam == Team.Black)
-                        chessClock.WhiteSwap();
+                    timeDelayClock = TIME_DELAY_CLOCK;
+                    botNeedPressClock = true;
                 }
             }
             else if (gameMode == GameMode.PlayerVSAggressiveRandomBot)
             {
-                if (timeDelay <= 0) // Tiempo de espera
+                if (timeDelayMove <= 0) // Tiempo de espera
                 {
-                    timeDelay = UnityEngine.Random.Range(MIN_TIME_DELAY, MAX_TIME_DELAY); // Tiempo de espera - ACTUALIZADO
+                    timeDelayMove = UnityEngine.Random.Range(MIN_TIME_DELAY_MOVE, MAX_TIME_DELAY_MOVE); // Tiempo de espera - ACTUALIZADO
 
                     AggressiveRandomMove(isWhiteTurn); // Movimiento de la IA
 
-                    // Press Clock
-                    if (playerTeam == Team.White)
-                        chessClock.BlackSwap();
-                    if (playerTeam == Team.Black)
-                        chessClock.WhiteSwap();
+                    timeDelayClock = TIME_DELAY_CLOCK;
+                    botNeedPressClock = true;
                 }
             }
+        }
+
+        if (botNeedPressClock)
+        {
+            if (timeDelayClock > 0) // Tiempo de espera - CONTADOR
+                timeDelayClock -= Time.deltaTime;
+
+            if (timeDelayClock <= 0)
+            {
+                // Press Clock
+                if (playerTeam == Team.White)
+                    chessClock.BlackSwap();
+                if (playerTeam == Team.Black)
+                    chessClock.WhiteSwap();
+
+                botNeedPressClock = false;
+            }
+
         }
     }
 

@@ -77,28 +77,38 @@ public class CameraMovement : MonoBehaviour
 
     public void MoveCameraToMenuSide()
     {
-        targetPosition = chessBoard.gameObject.transform.position + offsetPositionMenuSide;
+        targetPosition = chessBoard.gameObject.transform.TransformPoint(offsetPositionMenuSide);
         targetRotation = chessBoard.gameObject.transform.rotation * offsetRotationMenuSide;
+
+        cameraView = 0;
     }
     public void MoveCameraToWhiteSide()
     {
-        targetPosition = chessBoard.gameObject.transform.position + offsetPositionWhiteSide;
+        targetPosition = chessBoard.gameObject.transform.TransformPoint(offsetPositionWhiteSide);
         targetRotation = chessBoard.gameObject.transform.rotation * offsetRotationWhiteSide;
+
+        cameraView = 0;
     }
     public void MoveCameraToBlackSide()
     {
-        targetPosition = chessBoard.gameObject.transform.position + offsetPositionBlackSide;
+        targetPosition = chessBoard.gameObject.transform.TransformPoint(offsetPositionBlackSide);
         targetRotation = chessBoard.gameObject.transform.rotation * offsetRotationBlackSide;
+
+        cameraView = 0;
     }
     private void MoveCameraToTopWhiteSide()
     {
-        targetPosition = chessBoard.gameObject.transform.position + offsetPositionTopWhiteSide;
+        targetPosition = chessBoard.gameObject.transform.TransformPoint(offsetPositionTopWhiteSide);
         targetRotation = chessBoard.gameObject.transform.rotation * offsetRotationTopWhiteSide;
+
+        cameraView = 1;
     }
     private void MoveCameraToTopBlackSide()
     {
-        targetPosition = chessBoard.gameObject.transform.position + offsetPositionTopBlackSide;
+        targetPosition = chessBoard.gameObject.transform.TransformPoint(offsetPositionTopBlackSide);
         targetRotation = chessBoard.gameObject.transform.rotation * offsetRotationTopBlackSide;
+
+        cameraView = 1;
     }
 
 }
