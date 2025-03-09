@@ -1,7 +1,7 @@
 # ♟️ Ajedrez en Unity 3D
 
 Este es un proyecto de ajedrez desarrollado en **Unity 3D**, con modelos 3D creados en **Blender** y físicas semi-realistas. Existen dos versiones por ahora:
-1. **Versión Base** → Un ajedrez interactivo con físicas.
+1. **Versión Base** → Un ajedrez interactivo con físicas y interacción mediante raycast.
 2. **Versión VR** → Implementación de realidad virtual con interacción mediante manos virtuales.
 
 ## 🎮 Características
@@ -16,7 +16,7 @@ Este es un proyecto de ajedrez desarrollado en **Unity 3D**, con modelos 3D crea
 - **Físicas:**
   - **Rigidbodies y Colliders** para permitir interacción física con las piezas.
 - **Modelado 3D:**
-  - Piezas, mesa y tablero diseñados en **Blender**.
+  - Mesa, tablero, piezas de ajedrez y reloj diseñados en **Blender**.
   - Aplicación de **texturas y materiales**.
 
 ### 🕶️ Versión con Realidad Virtual
@@ -33,7 +33,7 @@ También puedes descargar versiones compiladas desde la sección de [Releases](h
 
 ## 🛠️ Requisitos
 - **Unity** (versión recomendada: `2022.3.14f1`)
-- Compatible con **PC y dispositivos VR** (Oculus, SteamVR, etc.).
+- Compatible con **PC y dispositivos VR** (Oculus, SteamVR, etc.), respectivamente de la version.
 
 ## 📜 Licencia
 Este proyecto está bajo la licencia **MIT**.
