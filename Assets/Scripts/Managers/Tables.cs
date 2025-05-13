@@ -33,6 +33,13 @@ public class Tables : MonoBehaviour
 
         // play sound FX
         SoundFXManager.Instance.PlaySoundFXClip(changeTableSoundClip, transform, 1f);
+
+        /* | XR Adaptation | */
+
+        // Refresh colliders for grabbing
+        GetComponent<AutoAssignChildColliders>().RefreshColliders();
+
+        /* | XR Adaptation | */
     }
 
 }

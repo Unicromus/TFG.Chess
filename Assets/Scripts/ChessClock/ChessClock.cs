@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class ChessClock : MonoBehaviour
 {
-    [Header("Victory Screen")]
-    [SerializeField] private GameObject victoryScreen;
-
     [Header("Clock Top Buttons")]
     [SerializeField] private GameObject clockTopButtons;
 
@@ -22,6 +19,7 @@ public class ChessClock : MonoBehaviour
     [SerializeField] private AudioClip gameWinSoundClip;
     [SerializeField] private AudioClip gameLoseSoundClip;
 
+    [Header("Clock Time Texts")]
     public TMP_Text textTimerWhite; // The text we gonna change for the white timer
     public TMP_Text textTimerBlack; // The text we gonna change for the black timer
 
@@ -39,6 +37,7 @@ public class ChessClock : MonoBehaviour
 
     private bool isWhiteTurn; // Which turn? TRUE --> WHITE | FALSE --> BLACK
 
+    [Header("Under 1 minute add time")]
     [SerializeField] private float ADD_TIME = 3.0f;
     private bool whiteLastThirtySeconds;
     private bool blackLastThirtySeconds;
@@ -126,8 +125,7 @@ public class ChessClock : MonoBehaviour
     /* UI - Display : Victory, Timers */
     private void DisplayVictory(int winningTeam)
     {
-        victoryScreen.SetActive(true);
-        victoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
+        chessBoard.DisplayVictory(winningTeam);
     }
     private void DisplayWhiteTime()
     {

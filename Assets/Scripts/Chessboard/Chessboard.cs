@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public enum SpecialMove
 {
@@ -52,6 +53,9 @@ public class Chessboard : MonoBehaviour
     [Header("Promotion menu")]
     [SerializeField] private GameObject promotionMenu; // Canvas Promotion Menu.
 
+    [Header("In Game UI")]
+    [SerializeField] private GameObject inGameUI; // Canvas InGameUI Menu.
+
     [Header("Chess clock")]
     [SerializeField] private ChessClock chessClock; // Reloj Digital.
 
@@ -74,6 +78,20 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private AudioClip gameWinSoundClip;
     [SerializeField] private AudioClip gameLoseSoundClip;
 
+    /* | XR Adaptation | */
+    [Header("XR stuff")]
+    [SerializeField] private Transform leftHandTransform; // Transformación de la mano izquierda
+    [SerializeField] private Transform rightHandTransform; // Transformación de la mano derecha
+    [SerializeField] private XRDirectInteractor leftHandInteractor; // Interactor de la mano izquierda
+    [SerializeField] private XRDirectInteractor rightHandInteractor; // Interactor de la mano derecha
+
+    private Vector2Int leftHandHover = -Vector2Int.one; // La baldosa que está siendo resaltada por la mano izquierda.
+    private Vector2Int rightHandHover = -Vector2Int.one; // La baldosa que está siendo resaltada por la mano derecha.
+
+    [SerializeField] private VRMessageHandler messageHandler;  // Arrastra el VRMessageHandler en el Inspector - Para mostrar mensajes en la mano virtual
+
+    /* | XR Adaptation | */
+
     // LOGIC
     private ChessPiece[,] chessPieces; // La logica del tablero, contiene las piezas del ajedrez. 32 piezas en un tablero de 8x8, si esta vacio no hay pieza en esa baldosa.
     private ChessPiece currentlyDragging; // La ficha que se esta arrastrando.
@@ -84,7 +102,7 @@ public class Chessboard : MonoBehaviour
     private const int TILE_COUNT_Y = 8; // Cantidad de baldosas en eje Y.
     private GameObject[,] tiles; // Las baldosas invisibles 8x8.
     private Camera currentCamera; // La camara actual.
-    private Vector2Int currentHover; // Cursor actual.
+    //private Vector2Int currentHover; // Cursor actual.
     private Vector3 boardCenter; // El centro del tablero (las baldosas visibles). boardCenter = transform + boardCenterOffSet
     private Vector3 bounds; // Los limites del tablero. En este caso se utiliza para saber el punto inicial desde donde generar las baldosas invisibles.
 
@@ -151,6 +169,18 @@ public class Chessboard : MonoBehaviour
          */
         boardCenter = boardCenterOffSet; 
         bounds = new Vector3(-(TILE_COUNT_X / 2) * tileSize, 0, -(TILE_COUNT_Y / 2) * tileSize) + boardCenter;
+
+
+        /* | XR Adaptation | */
+
+        // Raycasts desde ambas manos
+        DetectTileWithRaycast(leftHandTransform, ref leftHandHover, Color.blue);  // Raycast mano izquierda (azul)
+        DetectTileWithRaycast(rightHandTransform, ref rightHandHover, Color.red); // Raycast mano derecha (rojo)
+
+        /* | XR Adaptation | */
+
+
+        /* | XR Adaptation | Deletion 
 
         if (!currentCamera)
         {
@@ -279,6 +309,7 @@ public class Chessboard : MonoBehaviour
                 currentlyDragging.SetPositionWithLimits(ray.GetPoint(distance) + (Vector3.up * dragOffset), transform.rotation.eulerAngles, 0.0f); // distance is used to move smoothly the piece that is currentlyDragging.
             }
         }
+         | XR Adaptation | Deletion */
 
         /* Random AI Bot Move */
         if ((gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot) &&
@@ -499,18 +530,27 @@ public class Chessboard : MonoBehaviour
 
         DisplayVictory(team); // 0 or 1
     }
-    private void DisplayVictory(int winningTeam)
+    public void DisplayVictory(int winningTeam)
     {
         victoryScreen.SetActive(true);
         victoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
+
+        inGameUI.SetActive(false); // Para que no se sobreponga encima del menu InGame
+
+        // Pause the Clock
+        chessClock.StopTimer();
     }
     private void DisplayPromotionMenu()
     {
         promotionMenu.SetActive(true);
+
+        inGameUI.SetActive(false); // Para que no se sobreponga encima del menu InGame
     }
     private void HidePromotionMenu()
     {
         promotionMenu.SetActive(false);
+
+        inGameUI.SetActive(true); // Para hacer aparecer el menu InGame de nuevo
 
         // play sound FX
         SoundFXManager.Instance.PlaySoundFXClip(promoteSoundClip, transform, 1f);
@@ -535,6 +575,9 @@ public class Chessboard : MonoBehaviour
         victoryScreen.transform.GetChild(3).gameObject.SetActive(false); // DeadPosition
         victoryScreen.transform.GetChild(4).gameObject.SetActive(false); // 75MoveRule
         victoryScreen.SetActive(false);
+
+        // Reset InGameUI
+        inGameUI.SetActive(true); // Para hacer aparecer el menu InGame de nuevo
 
         // Destroy GameObjects and reset Fields
         CleanChess();
@@ -1815,6 +1858,197 @@ public class Chessboard : MonoBehaviour
         /* Reset References */
         currentlyDragging = null;
         availableMoves.Clear();
+    }
+
+    /* | XR Adaptation | */
+
+    private void DetectTileWithRaycast(Transform hand, ref Vector2Int handHover, Color rayColor)
+    {
+        RaycastHit hit;
+        Vector3 rayOrigin = hand.position; // Posición de la mano
+        Vector3 rayDirection = Vector3.down; // Hacia abajo
+
+        bool hitTile = Physics.Raycast(rayOrigin, rayDirection, out hit, 100, LayerMask.GetMask("Tile", "Hover", "Highlight"));
+
+        if (hitTile)
+        {
+            Vector2Int hitPosition = LookupTileIndex(hit.collider.transform.gameObject);
+
+            if (handHover != hitPosition) // Si la mano cambia de baldosa
+            {
+                if (handHover != -Vector2Int.one)
+                    tiles[handHover.x, handHover.y].layer = (ContainsValidMove(ref availableMoves, handHover)) ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile"); // Deja de resaltar la baldosa anterior
+
+                handHover = hitPosition;
+                tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover"); // Resalta la nueva baldosa
+            }
+
+            // Dibujar el rayo solo si golpea una baldosa
+            Debug.DrawRay(rayOrigin, rayDirection * hit.distance, rayColor, 0.1f);
+        }
+        else
+        {
+            if (handHover != -Vector2Int.one) // Si la mano no resalta ninguna baldosa y había una baldosa resaltada
+            {
+                tiles[handHover.x, handHover.y].layer = (ContainsValidMove(ref availableMoves, handHover)) ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile"); // Deja de resaltar la baldosa anterior
+                handHover = -Vector2Int.one;
+            }
+        }
+    }
+
+    private void OnEnable()
+    {
+        // Suscribirse a los eventos de selección
+        leftHandInteractor.selectEntered.AddListener(OnLeftHandSelectEntered);
+        rightHandInteractor.selectEntered.AddListener(OnRightHandSelectEntered);
+        leftHandInteractor.selectExited.AddListener(OnLeftHandSelectExited);
+        rightHandInteractor.selectExited.AddListener(OnRightHandSelectExited);
+    }
+
+    private void OnDisable()
+    {
+        // Desuscribirse a los eventos de selección
+        leftHandInteractor.selectEntered.RemoveListener(OnLeftHandSelectEntered);
+        rightHandInteractor.selectEntered.RemoveListener(OnRightHandSelectEntered);
+        leftHandInteractor.selectExited.RemoveListener(OnLeftHandSelectExited);
+        rightHandInteractor.selectExited.RemoveListener(OnRightHandSelectExited);
+    }
+
+    // Métodos que se llaman cuando el controlador izquierdo entra en modo de selección
+    private void OnLeftHandSelectEntered(SelectEnterEventArgs args)
+    {
+        OnSelectEntered(ref leftHandHover);
+    }
+
+    // Métodos que se llaman cuando el controlador derecho entra en modo de selección
+    private void OnRightHandSelectEntered(SelectEnterEventArgs args)
+    {
+        OnSelectEntered(ref rightHandHover);
+    }
+
+    // Métodos que se llaman cuando el controlador izquierdo sale de selección
+    private void OnLeftHandSelectExited(SelectExitEventArgs args)
+    {
+        OnSelectExited(ref leftHandHover);
+    }
+
+    // Métodos que se llaman cuando el controlador derecho sale de selección
+    private void OnRightHandSelectExited(SelectExitEventArgs args)
+    {
+        OnSelectExited(ref rightHandHover);
+    }
+
+    private void OnSelectEntered(ref Vector2Int handHover)
+    {
+        if (handHover != -Vector2Int.one) // Si se esta resaltando una baldosa
+        {
+            if (chessPieces[handHover.x, handHover.y] != null) // Si hay una pieza en esa baldosa
+            {
+                // Is it our turn?
+                if ((gameMode == GameMode.OnePlayer &&
+                    ((isWhiteTurn && chessPieces[handHover.x, handHover.y].team == 0 && chessClock.GetIsTimerWhite()) ||
+                    (!isWhiteTurn && chessPieces[handHover.x, handHover.y].team == 1 && chessClock.GetIsTimerBlack())))
+                    ||
+                    ((gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot) &&
+                    ((isWhiteTurn && chessPieces[handHover.x, handHover.y].team == 0 && chessClock.GetIsTimerWhite() && playerTeam == Team.White) ||
+                    (!isWhiteTurn && chessPieces[handHover.x, handHover.y].team == 1 && chessClock.GetIsTimerBlack() && playerTeam == Team.Black))))
+                {
+                    currentlyDragging = chessPieces[handHover.x, handHover.y];
+
+                    // Get a list of available moves of the piece that is currently dragging.
+                    availableMoves = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
+                    // Get what special move is possible and add the special move to available moves.
+                    specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref availableMoves,
+                        castlingWhiteKingSide, castlingWhiteQueenSide, castlingBlackKingSide, castlingBlackQueenSide, possibleEnPassantTarget); // References reduce memory use
+                                                                                                                                                // Check if our king will be in danger if we move our piece, if so, remove that move as an possible option.
+                                                                                                                                                // Crearemos una simulación para cada movimiento posible de la pieza y comprobaremos si el rey termina siendo amenazado al realizar los movimientos.
+                    PreventCheck(ref chessPieces, currentlyDragging, ref availableMoves);
+
+                    // Highlight tiles using availableMoves
+                    HighlightTiles();
+                }
+                else // No es nuestro turno - Mostrar advertencias
+                {
+                    // Apuntamos que la pieza esta siendo agarrada, ya que cuando la soltemos, como el movimiento es invalido se reubicara en el sitio de origen
+                    currentlyDragging = chessPieces[handHover.x, handHover.y];
+
+                    if(!chessClock.GetIsTimerWhite() && !chessClock.GetIsTimerBlack())
+                    {
+                        // El reloj no esta en marcha
+                        messageHandler.ShowMessage("Wait - The clock is not on");
+                    }
+                    else if (gameMode == GameMode.OnePlayer)
+                    {
+                        if ((isWhiteTurn && chessClock.GetIsTimerBlack()) ||
+                            (!isWhiteTurn && chessClock.GetIsTimerWhite()))
+                        {
+                            // Aun no es tu turno (falta el cambio de turno en el reloj)
+                            messageHandler.ShowMessage("Wait - Someone have to pass the turn (clock)");
+                        }
+                        else if ((isWhiteTurn && chessClock.GetIsTimerWhite() && chessPieces[handHover.x, handHover.y].team == 1) ||
+                                (!isWhiteTurn && chessClock.GetIsTimerBlack() && chessPieces[handHover.x, handHover.y].team == 0))
+                        {
+                            // No son tus piezas (el reloj esta en funcionamiento)
+                            messageHandler.ShowMessage("Wait - It's not your chess piece");
+                        }
+                    }
+                    else if (gameMode == GameMode.PlayerVSRandomBot || gameMode == GameMode.PlayerVSAggressiveRandomBot)
+                    {
+                        if ((playerTeam == Team.White && chessPieces[handHover.x, handHover.y].team == 1) ||
+                            (playerTeam == Team.Black && chessPieces[handHover.x, handHover.y].team == 0))
+                        {
+                            // No son tus piezas
+                            messageHandler.ShowMessage("Wait - It's not your chess piece");
+                        }
+                        else if ((isWhiteTurn && chessClock.GetIsTimerWhite() && playerTeam == Team.Black && chessPieces[handHover.x, handHover.y].team == 1) ||
+                                (!isWhiteTurn && chessClock.GetIsTimerBlack() && playerTeam == Team.White && chessPieces[handHover.x, handHover.y].team == 0))
+                        {
+                            // Turno de los BOTS
+                            messageHandler.ShowMessage("Wait - BOT's turn");
+                        }
+                        else if ((isWhiteTurn && chessClock.GetIsTimerBlack() && playerTeam == Team.Black && chessPieces[handHover.x, handHover.y].team == 1) ||
+                                (!isWhiteTurn && chessClock.GetIsTimerWhite() && playerTeam == Team.White && chessPieces[handHover.x, handHover.y].team == 0))
+                        {
+                            // El jugador tiene que pasar de turno
+                            messageHandler.ShowMessage("Wait - Player have to pass the turn (clock)");
+                        }
+                        else if ((isWhiteTurn && chessClock.GetIsTimerBlack() && playerTeam == Team.White && chessPieces[handHover.x, handHover.y].team == 0) ||
+                                (!isWhiteTurn && chessClock.GetIsTimerWhite() && playerTeam == Team.Black && chessPieces[handHover.x, handHover.y].team == 1))
+                        {
+                            // El BOT tiene que pasar de turno
+                            messageHandler.ShowMessage("Wait - BOT have to pass the turn (clock)");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnSelectExited(ref Vector2Int handHover)
+    {
+        if (currentlyDragging) // Si estamos moviendo una pieza
+        {
+            if (handHover != -Vector2Int.one) // Si soltamos una pieza dentro de la tabla, intentamos hacer el movimiento
+            {
+                    Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY);
+
+                    bool validMove = MoveTo(currentlyDragging, handHover.x, handHover.y);
+                    if (!validMove) // Si el movimiento no es valido, restablecemos su posicion anterior
+                    {
+                        // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                        // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                        currentlyDragging.SetPositionWithLimits(transform.TransformPoint(GetTileCenter(previousPosition.x, previousPosition.y)), transform.rotation.eulerAngles, tileSize / 4, false);
+                    }
+            }
+            else // Si soltamos una pieza fuera de la tabla, restablecemos su posicion anterior
+            {
+                    // Convertimos la posición local a posición global teniendo en cuenta la transformación del tablero
+                    // Se debe aplicar al final, despues de haber calculado todas las transformaciones locales
+                    currentlyDragging.SetPositionWithLimits(transform.TransformPoint(GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY)), transform.rotation.eulerAngles, tileSize / 4, false);
+            }
+            currentlyDragging = null;
+            RemoveHighlightTiles(); // Every time we stop dragging a piece we remove the HighlightTiles
+        }
     }
 
 }
