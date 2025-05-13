@@ -1,6 +1,7 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GameUI : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class GameUI : MonoBehaviour
     [Header("Scripts Logic")]
     [SerializeField] private Chessboard chessBoard; // Tablero de Ajedrez
     [SerializeField] private ChessClock chessClock; // Reloj Digital
-    [SerializeField] private CameraMovement cameraMovement; // La camara
+    //[SerializeField] private CameraMovement cameraMovement; // La camara
 
     [Header("Inputs")]
     [SerializeField] private TMP_InputField textForsythEdwardsNotation;
@@ -86,7 +87,7 @@ public class GameUI : MonoBehaviour
         menuAnimator.SetTrigger("InGameUI");
         chessBoard.OnStartButton();
 
-        cameraMovement.MoveCameraToWhiteSide();
+        //cameraMovement.MoveCameraToWhiteSide();
 
         // play sound FX
         SoundFXManager.Instance.PlaySoundFXClip(clickSoundClip, transform, 1f);
@@ -97,7 +98,7 @@ public class GameUI : MonoBehaviour
         menuAnimator.SetTrigger("InGameUI");
         chessBoard.OnStartButton();
 
-        cameraMovement.MoveCameraToBlackSide();
+        //cameraMovement.MoveCameraToBlackSide();
 
         // play sound FX
         SoundFXManager.Instance.PlaySoundFXClip(clickSoundClip, transform, 1f);
@@ -122,7 +123,7 @@ public class GameUI : MonoBehaviour
             screenInGameUI.transform.GetChild(4).gameObject.SetActive(false); // Spacer 01
             //screenInGameUI.transform.GetChild(5).gameObject.SetActive(false); // UI Clock
             screenInGameUI.transform.GetChild(6).gameObject.SetActive(false); // Change Table
-            screenInGameUI.transform.GetChild(7).gameObject.SetActive(false); // Change Camera View
+            //screenInGameUI.transform.GetChild(7).gameObject.SetActive(false); // Change Camera View - En XR no es necesario
             screenInGameUI.transform.GetChild(8).gameObject.SetActive(false); // Spacer 02
             screenInGameUI.transform.GetChild(9).gameObject.SetActive(false); // ReStart
             screenInGameUI.transform.GetChild(10).gameObject.SetActive(false); // Menu
@@ -137,7 +138,7 @@ public class GameUI : MonoBehaviour
             screenInGameUI.transform.GetChild(4).gameObject.SetActive(true); // Spacer 01
             //screenInGameUI.transform.GetChild(5).gameObject.SetActive(true); // UI Clock
             screenInGameUI.transform.GetChild(6).gameObject.SetActive(true); // Change Table
-            screenInGameUI.transform.GetChild(7).gameObject.SetActive(true); // Change Camera View
+            //screenInGameUI.transform.GetChild(7).gameObject.SetActive(true); // Change Camera View - En XR no es necesario
             screenInGameUI.transform.GetChild(8).gameObject.SetActive(true); // Spacer 02
             screenInGameUI.transform.GetChild(9).gameObject.SetActive(true); // ReStart
             screenInGameUI.transform.GetChild(10).gameObject.SetActive(true); // Menu
@@ -175,7 +176,7 @@ public class GameUI : MonoBehaviour
     {
         menuAnimator.SetTrigger("GameUI");
 
-        cameraMovement.MoveCameraToMenuSide();
+        //cameraMovement.MoveCameraToMenuSide();
 
         // play sound FX
         SoundFXManager.Instance.PlaySoundFXClip(declineSoundClip, transform, 1f);
