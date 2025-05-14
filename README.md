@@ -115,6 +115,31 @@ También puedes descargar una versión compilada en la sección de [Releases](ht
    * **Cambiar la mesa** entre tres estilos disponibles.
    * **Volver al menú principal**.
 
+---
+
+## 🧪 Builds disponibles
+
+A continuación, se listan las distintas versiones compiladas del proyecto para diferentes plataformas y modos de uso:
+
+### 🖥️ Desktop Build (With Simulator)
+
+Versión para PC que permite jugar **sin visor de realidad virtual**.  
+Incluye el **simulador XR**, ideal para probar el juego con teclado y ratón.  
+✅ **Recomendado si no tienes visor VR y quieres probar el proyecto.**
+
+### 🖥️ Desktop Build
+
+Versión para PC sin simulador.  
+Pensada para jugar con un visor VR compatible con **OpenXR**, conectado al ordenador (Meta Quest 2 con Link/AirLink).  
+✅ **Requiere visor VR.**
+
+### 🤖 Android Build
+
+Versión compilada para instalarse directamente en visores autónomos como **Meta Quest 2**.  
+✅ No requiere conexión a un PC.
+
+---
+
 ## 🛠️ Requisitos
 
 - **Unity 2022.3.60f1 LTS** (solo si quieres abrir el proyecto en el editor).
