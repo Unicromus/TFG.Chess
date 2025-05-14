@@ -1,42 +1,79 @@
-# ♟️ Ajedrez en Unity 3D
+# ♟️ Proyecto Ajedrez 3D en Unity
 
-Este es un proyecto de ajedrez desarrollado en **Unity 3D**, con modelos 3D creados en **Blender** y físicas semi-realistas. Existen dos versiones por ahora:
-1. **Versión Base** → Un ajedrez interactivo con físicas y interacción mediante raycast.
-2. **Versión VR** → Implementación de realidad virtual con interacción mediante manos virtuales.
+Este es un proyecto de ajedrez 3D desarrollado en Unity, con dos versiones completamente funcionales:
 
-## 🎮 Características
+1. 🎮 **Versión clásica (base)**: jugable con teclado y ratón.
+2. 🥽 **Versión en realidad virtual (VR)**: jugable con visores como Meta Quest 2 y controladores VR.
 
-### 🔹 Versión Base
-- **Escenario:** Mesa, tablero, piezas de ajedrez y reloj.
-- **Interfaz:** Menú en **Canvas** para configuración.
-- **Gráficos:**
-  - **HDRI** para iluminación realista.
-  - **Reflection Probe** para reflejos precisos.
-  - Sombras dinámicas y objetos estáticos optimizados.
-- **Físicas:**
-  - **Rigidbodies y Colliders** para permitir interacción física con las piezas.
-- **Modelado 3D:**
-  - Mesa, tablero, piezas de ajedrez y reloj diseñados en **Blender**.
-  - Aplicación de **texturas y materiales**.
+Las instrucciones detalladas y requisitos específicos están en los README de cada rama:
 
-### 🕶️ Versión con Realidad Virtual
-- **Interacción VR:** Movimiento de piezas con **manos virtuales**.
-- **Nuevo menú adaptado a VR** para una mejor experiencia.
-- **Mismas mejoras gráficas y físicas de la versión base.**
+---
 
-## 📂 Descarga
-Puedes acceder a cada versión en sus respectivos branches: (el main se mantendra como base-feature por ahora)
-- [Versión Base](https://github.com/Unicromus/P.MR.Chess/tree/base-feature)
-- [Versión VR](https://github.com/Unicromus/P.MR.Chess/tree/vr-feature)
+## 🧭 Acerca del repositorio
 
-También puedes descargar versiones compiladas desde la sección de [Releases](https://github.com/Unicromus/P.MR.Chess/releases).
+La rama `main` contiene el **estado más reciente y actualizado del proyecto**, que actualmente corresponde a la versión VR.
 
-## 🛠️ Requisitos
-- **Unity** (versión recomendada: `2022.3.14f1`)
-- Compatible con **PC y dispositivos VR** (Oculus, SteamVR, etc.), respectivamente de la version.
+El desarrollo se organiza en ramas separadas para mantener claridad y facilidad de uso:
+
+| Rama | Descripción |
+|------|-------------|
+| [`base-feature`](https://github.com/Unicromus/P.MR.Chess/tree/base-feature) | Versión clásica sin realidad virtual. |
+| [`vr-feature`](https://github.com/Unicromus/P.MR.Chess/tree/vr-feature) | Versión con soporte completo para realidad virtual. |
+| `main` | Última versión del proyecto, actualmente sincronizada con `vr-feature`. |
+
+---
+
+## 📂 Builds disponibles
+
+Puedes encontrar compilaciones listas para usar en la sección de [Releases](https://github.com/Unicromus/P.MR.Chess/releases), con las siguientes versiones:
+
+### 🖱️ Desktop Build (Versión Base)
+- Ejecuta la **versión clásica del juego**, controlado con **teclado y ratón**.
+- No requiere visor de realidad virtual.
+- Incluye todas las funcionalidades: IA, reloj digital, guardado/carga FEN, reposicionar piezas, cámara aérea, selección de mesa, etc.
+
+### 🖥️ Desktop Build (With Simulator)
+- Juega sin visor VR, usando el **simulador XR** incluido.
+- Ideal para pruebas rápidas en PC.
+
+### 🖥️ Desktop Build (Requiere visor)
+- Ejecuta el proyecto en PC con un visor VR conectado (por ejemplo, Meta Quest 2 + AirLink/Link).
+
+### 🤖 Android Build
+- Instala directamente el proyecto en visores autónomos como **Meta Quest 2**.
+- No requiere conexión a un PC.
+
+---
+
+## 🔀 Comparativa de versiones
+
+| Característica | Versión clásica | Versión VR |
+|----------------|------------------|-------------|
+| Jugar contra IA | ✅ | ✅ |
+| Guardar/cargar FEN | ✅ | ✅ |
+| Reloj interactivo | ✅ | ✅ (VR compatible) |
+| Cambiar cámara desde el menú | ✅ | ❌ (XR Rig reemplaza la cámara) |
+| Interfaz VR | ❌ | ✅ |
+| Manos y movimiento VR | ❌ | ✅ |
+
+---
+
+## 🎓 Requisitos de desarrollo
+
+- **Unity** (versión recomendada: `2022.3.60f1`)
+- Para VR:
+  - Módulos Android (OpenJDK, SDK, NDK)
+  - OpenXR, XR Plugin Management
+  - XR Interaction Toolkit
+
+---
 
 ## 📜 Licencia
-Este proyecto está bajo la licencia **MIT**.
+
+Este proyecto está distribuido bajo la licencia **MIT**.
+
+---
 
 ## 📧 Contacto
-Si tienes dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/P.MR.Chess/issues). Probablemente tarde en responder.
+
+Para dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/P.MR.Chess/issues).
