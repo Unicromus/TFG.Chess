@@ -142,7 +142,7 @@ Versión compilada para instalarse directamente en visores autónomos como **Met
 
 ## 🛠️ Requisitos
 
-- **Unity 2022.3.60f1 LTS** (solo si quieres abrir el proyecto en el editor).
+- **Unity 2022.3.60f1 LTS** o superior (solo si quieres abrir el proyecto en el editor).
 - **Meta Quest 2** o cualquier otro dispositivo compatible con OpenXR.
 - Compatible con **Windows**.
 
