@@ -83,7 +83,7 @@ También puedes descargar una versión compilada en la sección de [Releases](ht
 
 ## 🛠️ Requisitos
 
-- **Unity 2022.3.14f1 LTS** (solo si quieres abrir el proyecto en el editor).
+- **Unity 2022.3.62f1 LTS** o superior (solo si quieres abrir el proyecto en el editor).
 - Compatible con **Windows** (interacción con teclado y ratón).
 
 ## 📜 Licencia
