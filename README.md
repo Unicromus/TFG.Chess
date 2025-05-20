@@ -60,7 +60,7 @@ Puedes encontrar compilaciones listas para usar en la sección de [Releases](htt
 
 ## 🎓 Requisitos de desarrollo
 
-- **Unity** (versión recomendada o superior a: `2022.3.60f1`)
+- **Unity** (versión recomendada o superior a: `2022.3.62f1`)
 - Para VR:
   - Módulos Android (OpenJDK, SDK, NDK)
   - OpenXR, XR Plugin Management
