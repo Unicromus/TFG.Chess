@@ -32,11 +32,6 @@ public class ChessPiece : MonoBehaviour
 
     private bool isFree = true; // Si la pieza es libre del update. Para dejar de actualizar su transform
 
-    private void Start()
-    {
-        transform.rotation = Quaternion.Euler((team == 1) ? Vector3.zero : new Vector3(0, 180, 0)); // Se rotan 180 grados las piezas blancas.
-    }
-
     private void Update()
     {
         if (!isFree)
