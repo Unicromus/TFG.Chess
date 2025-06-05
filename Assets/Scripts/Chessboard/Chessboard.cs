@@ -405,13 +405,18 @@ public class Chessboard : MonoBehaviour
         // Se instancia la pieza(prefab). 
         ChessPiece cp = Instantiate(piecePrefabs[(int)type - 1], // we do -1 because ChessPieceType has None 0
             transform.position + new Vector3(0f, dragOffset, 0f), // se instancia encima del centro del tablero
-            Quaternion.Euler(new Vector3(0, 0, 0)), 
+            transform.rotation, // Aqui se soluciono un problema cambiando Quaternion.Euler(new Vector3(0, 0, 0)) a utilizar la rotación del tablero.
             storePieces).GetComponent<ChessPiece>(); // Puede ser teniendo como padre al mismo tablero (transform) o en un gameobject nuevo (storePieces).
 
         cp.type = type; // type: 0-6
         cp.team = team; // team: 0 white | 1 black
         cp.GetComponent<MeshRenderer>().material = teamMaterials[team];
         //cp.GetComponent<MeshRenderer>().material = teamMaterials[((team == 0) ? 0 : 6) + ((int)type - 1)]; // if there is more than 2 materials
+
+        if (team == 0)
+        {
+            cp.gameObject.transform.rotation *= Quaternion.Euler(0, 180, 0); // Se rotan 180 grados las piezas blancas.
+        }
 
         return cp;
     }
