@@ -92,4 +92,4 @@ Este proyecto está bajo la licencia **MIT**.
 
 ## 📧 Contacto
 
-Si tienes dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/P.MR.Chess/issues). Probablemente tarde en responder.
+Si tienes dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/TFG.Chess/issues). Probablemente tarde en responder.
