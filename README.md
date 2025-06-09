@@ -71,15 +71,15 @@ Esta es la **versión VR** del juego de ajedrez desarrollado en **Unity 3D**, di
 
 Esta rama corresponde a la **versión VR**. Puedes clonar o descargar directamente desde:
 
-- [Versión VR (vr-feature)](https://github.com/Unicromus/P.MR.Chess/tree/vr-feature)
+- [Versión VR (vr-feature)](https://github.com/Unicromus/TFG.Chess/tree/vr-feature)
 
-También puedes descargar una versión compilada en la sección de [Releases](https://github.com/Unicromus/P.MR.Chess/releases).
+También puedes descargar una versión compilada en la sección de [Releases](https://github.com/Unicromus/TFG.Chess/releases).
 
 ## 🕹️ Instrucciones para jugar
 
 ### Si descargaste la versión compilada:
 
-1. Ve a la sección de [Releases](https://github.com/Unicromus/P.MR.Chess/releases) y descarga el archivo `.zip` correspondiente a la versión VR.
+1. Ve a la sección de [Releases](https://github.com/Unicromus/TFG.Chess/releases) y descarga el archivo `.zip` correspondiente a la versión VR.
 2. Extrae el contenido en una carpeta de tu PC.
 3. Ejecuta `Ajedrez.VR.exe` para jugar.
 
@@ -166,4 +166,4 @@ Este proyecto está bajo la licencia **MIT**.
 
 ## 📧 Contacto
 
-Si tienes dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/P.MR.Chess/issues). Probablemente tarde en responder.
+Si tienes dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/TFG.Chess/issues). Probablemente tarde en responder.
