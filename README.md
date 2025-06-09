@@ -17,15 +17,15 @@ El desarrollo se organiza en ramas separadas para mantener claridad y facilidad 
 
 | Rama | Descripción |
 |------|-------------|
-| [`base-feature`](https://github.com/Unicromus/P.MR.Chess/tree/base-feature) | Versión clásica sin realidad virtual. |
-| [`vr-feature`](https://github.com/Unicromus/P.MR.Chess/tree/vr-feature) | Versión con soporte completo para realidad virtual. |
+| [`base-feature`](https://github.com/Unicromus/TFG.Chess/tree/base-feature) | Versión clásica sin realidad virtual. |
+| [`vr-feature`](https://github.com/Unicromus/TFG.Chess/tree/vr-feature) | Versión con soporte completo para realidad virtual. |
 | `main` | Última versión del proyecto, actualmente sincronizada con `vr-feature`. |
 
 ---
 
 ## 📂 Builds disponibles
 
-Puedes encontrar compilaciones listas para usar en la sección de [Releases](https://github.com/Unicromus/P.MR.Chess/releases), con las siguientes versiones:
+Puedes encontrar compilaciones listas para usar en la sección de [Releases](https://github.com/Unicromus/TFG.Chess/releases), con las siguientes versiones:
 
 ### 🖱️ Desktop Build (Versión Base)
 - Ejecuta la **versión clásica del juego**, controlado con **teclado y ratón**.
@@ -76,4 +76,4 @@ Este proyecto está distribuido bajo la licencia **MIT**.
 
 ## 📧 Contacto
 
-Para dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/P.MR.Chess/issues).
+Para dudas o sugerencias, puedes abrir un [issue](https://github.com/Unicromus/TFG.Chess/issues).
