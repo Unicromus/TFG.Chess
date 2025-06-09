@@ -40,15 +40,15 @@ Esta es la versión estándar del juego de ajedrez desarrollada en **Unity 3D**,
 
 Esta rama corresponde a la **versión base sin VR**. Puedes clonar o descargar directamente desde:
 
-- [Versión Base (base-feature)](https://github.com/Unicromus/P.MR.Chess/tree/base-feature)
+- [Versión Base (base-feature)](https://github.com/Unicromus/TFG.Chess/tree/base-feature)
 
-También puedes descargar una versión compilada en la sección de [Releases](https://github.com/Unicromus/P.MR.Chess/releases).
+También puedes descargar una versión compilada en la sección de [Releases](https://github.com/Unicromus/TFG.Chess/releases).
 
 ## 🕹️ Instrucciones para jugar
 
 ### Si descargaste la versión compilada:
 
-1. Ve a la sección de [Releases](https://github.com/Unicromus/P.MR.Chess/releases) y descarga el archivo `.zip` correspondiente a la versión base.
+1. Ve a la sección de [Releases](https://github.com/Unicromus/TFG.Chess/releases) y descarga el archivo `.zip` correspondiente a la versión base.
 2. Extrae el contenido en una carpeta de tu PC.
 3. Ejecuta `Ajedrez.Base.exe` para jugar.
 
